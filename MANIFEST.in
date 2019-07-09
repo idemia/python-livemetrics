@@ -1,0 +1,4 @@
+include docs/*
+include tests/*
+include livemetrics/*.py
+include README.rst

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <meta name="description" content="Dashboard">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+        
+  <!-- See http://bernii.github.io/gauge.js/ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gauge.js/1.3.2/gauge.min.js" integrity="sha256-KEsUMeRzEtuzIgL/g8GXg5zolwofZs+J4Lrg2wLn1AE=" crossorigin="anonymous"></script>
+  
+  <!-- See http://omnipotent.net/jquery.sparkline -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-sparklines/2.1.2/jquery.sparkline.js" integrity="sha256-LyvLC4QvPtUU7GAeXnI4atDtDDSKOtUFoIRsysvDSDQ=" crossorigin="anonymous"></script>
+  
+  <!-- https://canvasjs.com/javascript-charts/box-whisker-chart-custom-color/ -->
+  <!-- https://canvasjs.com/jquery-charts/box-whisker-chart/-->
+  <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
+</head>
+
+<body>
+  <style>
+  
+.gauge-canvas {
+  top: 0px;
+  position: relative;
+}
+
+.gauge-text {
+  position: relative;
+  top: -10px; left: 0; right: 0;
+  text-align: center; font-size: 1em; font-weight: bold;
+  color: black; font-family: 'Amaranth', sans-serif;
+}  
+
+.gauge-sparkline {
+  position: relative;
+  top: 0px; left: 0; right: 0;
+}  
+
+.thumbnail {
+    padding: 1px;
+    margin-bottom: 0px;
+}
+    
+.h1, .h2, .h3, .h4, h1, h2, h3, h4 {
+    margin-top: 1px;
+    margin-bottom: 0px;
+}
+
+td {
+  vertical-align: top;
+  padding: 1px;
+  }
+
+.number {
+  text-align: right;
+}
+
+.tile {
+    margin-right: 10px;
+    margin-left: 10px;
+    background-color: #fff;
+    border-color: #ddd;
+    border-width: 1px;
+}
+  
+.panel-body {
+    padding: 2px;
+}
+
+.panel-heading {
+    padding: 2px 3px;
+}
+  
+.panel-primary > .health_ok {
+  background-color: #1a961a;
+}
+
+.panel-primary > .health_ko {
+  background-color: #9c2a2a;
+}
+  </style>
+  <script type="text/javascript">
+  
+  $( function(){
+
+    setInterval(refresh_values,5000);
+
+    {% for L in config %}
+      {% for meter in L.meters %}
+        init_{{L.id}}_meter_{{meter.id}}();
+      {% endfor %}
+      {% for histo in L.histograms %}
+        init_{{L.id}}_histo_{{histo.id}}();
+      {% endfor %}
+    {% endfor %}
+
+    refresh_values();
+  });
+  
+  var $mpoints_max = 50;
+  function refresh_values() {
+    {% for L in config %}
+
+    $.get("is_healthy", {server: "{{L.server}}"}, function(stats,status) {
+      update_{{L.id}}_status(true);
+    }).fail(function() {
+      update_{{L.id}}_status(false);
+    });
+
+    {% for meter in L.meters %}
+      $.get("metrics", {server: "{{L.server}}", event: "{{meter.event}}", result: "{{meter.result}}" }, function(stats,status) {
+          update_{{L.id}}_meter_{{meter.id}}(stats.rate1*3600);
+      }).fail(function() {
+          update_{{L.id}}_meter_{{meter.id}}(null);
+      });
+    {% endfor %}
+
+    {% for histo in L.histograms %}
+      $.get("histograms", {server: "{{L.server}}"}, function(stats,status) {
+          update_{{L.id}}_histo_{{histo.id}}(stats);
+      }).fail(function() {
+          update_{{L.id}}_histo_{{histo.id}}(null);
+      });
+    {% endfor %}
+
+    {% endfor %}
+  }
+
+  /* Health Status */
+
+  {% for L in config %}
+  function update_{{L.id}}_status(value) {
+    var obj = document.getElementById("health-status-{{L.id}}");
+    if (value==true) {
+      obj.className = "panel-heading health_ok";
+    } else {
+      obj.className = "panel-heading health_ko";
+    }
+  }
+  {% endfor %}
+
+  /*Metrics */
+  {% for L in config %}
+    {% for meter in L.meters %}
+      var ${{L.id}}_meter_{{meter.id}} = null;
+      var $mpoints_{{L.id}}_meter_{{meter.id}} = [];
+
+      function init_{{L.id}}_meter_{{meter.id}}() {
+        var opts = {
+          angle: 0.0,
+          lineWidth: 0.25,
+          radiusScale: 0.7,
+          pointer: {
+            length: 0.51, // // Relative to gauge radius
+            strokeWidth: 0.05, // The thickness
+            color: '#000000' // Fill color
+          },
+          limitMax: false,
+          limitMin: false,
+          strokeColor: '#E0E0E0',
+          colorStop: '{{meter.color}}'
+        };
+
+        ${{L.id}}_meter_{{meter.id}} = new Gauge(document.getElementById("canvas-{{L.id}}-meter-{{meter.id}}"));
+        ${{L.id}}_meter_{{meter.id}}.setOptions(opts);
+        ${{L.id}}_meter_{{meter.id}}.setTextField(document.getElementById("text-{{L.id}}-meter-{{meter.id}}"));
+        ${{L.id}}_meter_{{meter.id}}.setMinValue(0);
+        ${{L.id}}_meter_{{meter.id}}.maxValue = 25000;
+        ${{L.id}}_meter_{{meter.id}}.animationSpeed = 20;
+      }
+
+      function update_{{L.id}}_meter_{{meter.id}}(value) {
+        ${{L.id}}_meter_{{meter.id}}.set(Math.min(value,25000));
+
+        $mpoints_{{L.id}}_meter_{{meter.id}}.push(value);
+        if ($mpoints_{{L.id}}_meter_{{meter.id}}.length > $mpoints_max)
+            $mpoints_{{L.id}}_meter_{{meter.id}}.splice(0,1);
+        $('#line-{{L.id}}-meter-{{meter.id}}').sparkline($mpoints_{{L.id}}_meter_{{meter.id}}, { type:"line", chartRangeMin: 0, height: 40, width: $mpoints_{{L.id}}_meter_{{meter.id}}.length*2} );
+      }
+
+
+    {% endfor %}
+  {% endfor %}
+
+  /* Histograms */
+
+  {% for L in config %}
+  {% for histo in L.histograms %}
+      function init_{{L.id}}_histo_{{histo.id}}() {
+      }
+
+      function update_{{L.id}}_histo_{{histo.id}}(stats) {
+
+        var options = {
+          animationEnabled: false,
+          title: {
+            text: "{{histo.label}}"
+          },
+          axisY: {
+            title: "{{histo.title}}",
+            prefix: ""
+          },
+          data: [{
+            type: "boxAndWhisker",
+            upperBoxColor: "#68D46F",
+            lowerBoxColor: "#8062EF",
+            color: "black",
+            yValueFormatString: "##0",
+            dataPoints: [
+            {% for evt in histo.events %}
+              { label: "{{evt}}", y: [stats.{{evt}}.quantiles[0.05] * {{histo.factor|default(1)}},
+                                      stats.{{evt}}.quantiles[0.25] * {{histo.factor|default(1)}},
+                                      stats.{{evt}}.quantiles[0.75] * {{histo.factor|default(1)}},
+                                      stats.{{evt}}.quantiles[0.95] * {{histo.factor|default(1)}},
+                                      stats.{{evt}}.quantiles[0.5] * {{histo.factor|default(1)}} ] },
+            {% endfor %}
+            ]
+          }]
+        };
+        $("#chart-{{L.id}}-histo-{{histo.id}}").CanvasJSChart(options);
+
+      }
+    {% endfor %}
+  {% endfor %}
+
+  </script>
+
+<h2 id="title">Simple Dashboard</h2>
+
+{% for L in config %}
+
+<div class="tile panel panel-primary">
+<div class="panel-heading" id="health-status-{{L.id}}">{{L.label}}</div>
+  <div class="panel-body">
+
+<table>
+
+<tr>
+  <td>
+    {% for meter in L.meters %}
+    <span style="display: inline-block;">
+      <div class="thumbnail">
+        <canvas width=100 height=80 id="canvas-{{L.id}}-meter-{{meter.id}}" class="center-block gauge-canvas"></canvas>
+        <div id="text-{{L.id}}-meter-{{meter.id}}" class="gauge-text"></div>
+      </div>
+      <div class="thumbnail gauge-sparkline">
+        <span id="line-{{L.id}}-meter-{{meter.id}}">Loading..</span>
+      </div>
+      <div>
+        <h4>{{meter.label}}</h4>
+      </div>
+    </span>
+    {% endfor %}
+  </td>
+
+  <td>
+    {% for histo in L.histograms %}
+    <span style="display: inline-block;">
+      <div id="chart-{{L.id}}-histo-{{histo.id}}" style="height: 170px; width: {{40+60*histo.events|length}}px;"></div>
+    </span>
+    {% endfor %}
+  </td>
+</tr>
+
+
+</table>
+
+  </div>
+</div>
+</div>
+{% endfor %}
+
+</body>
+</html>
+  

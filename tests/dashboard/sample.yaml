@@ -1,0 +1,68 @@
+---
+- label: First Line
+  id: server1
+  server: http://localhost:7070/monitoring/v1
+  histograms:
+    - label: Test 1
+      id: t1
+      events: [values,time]
+      title: Value
+      factor: 1
+    - label: Test 2
+      id: t2
+      events: [time]
+      title: ms
+      factor: 1000
+  meters:
+    - label: Test OK
+      id: t1
+      event: test
+      result: ok
+      color: green
+    - label: Test Error
+      id: t2
+      event: test
+      result: error
+      color: red
+
+- label: Second Line
+  id: server2
+  server: http://localhost:7070/monitoring/v1
+  histograms:
+    - label: Test 2
+      id: t2
+      events: [time]
+      title: ms
+      factor: 1000
+    - label: Test 1
+      id: t1
+      events: [values,time]
+      title: Value
+      factor: 1
+  meters:
+    - label: Test Error
+      id: t2
+      event: test
+      result: error
+      color: red
+    - label: Test OK
+      id: t1
+      event: test
+      result: ok
+      color: green
+
+- label: Always missing
+  id: server3
+  server: http://localhost:9999/monitoring/v1
+  histograms:
+    - label: Test 1
+      id: t1
+      events: [values,time]
+      title: Value
+      factor: 1
+  meters:
+    - label: Test OK
+      id: t1
+      event: test
+      result: ok
+      color: green
