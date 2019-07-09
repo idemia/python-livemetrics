@@ -10,9 +10,9 @@ livemetrics
     :target: https://pypi.org/project/livemetrics/
     :alt: CeCILL-C
 
-.. image:: https://img.shields.io/pypi/pyversions/livemetrics.svg
+.. image:: https://img.shields.io/pypi/v/livemetrics.svg
     :target: https://pypi.org/project/livemetrics/
-    :alt: vx.y
+    :alt: v?.?
 
 .. image:: https://img.shields.io/pypi/pyversions/livemetrics.svg
     :target: https://pypi.org/project/livemetrics/
