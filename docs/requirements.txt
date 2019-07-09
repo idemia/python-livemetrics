@@ -1,2 +1,6 @@
 -e .
-aiohttp
+aiohttp >= 3.5
+flask >= 1.0.0
+django >= 2.0
+jinja2 >= 2.10.0
+PyYAML >= 5.0.0
