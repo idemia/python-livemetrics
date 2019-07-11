@@ -1,0 +1,21 @@
+---
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Test server
+servers:
+  - url: http://server.com/
+paths:
+  /test/{value}:
+    get:
+      summary: Test
+      operationId: test
+      parameters:
+        - name: value
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Operation successful
