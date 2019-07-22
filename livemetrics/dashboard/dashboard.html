@@ -13,9 +13,9 @@
   <!-- See http://omnipotent.net/jquery.sparkline -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-sparklines/2.1.2/jquery.sparkline.js" integrity="sha256-LyvLC4QvPtUU7GAeXnI4atDtDDSKOtUFoIRsysvDSDQ=" crossorigin="anonymous"></script>
   
-  <!-- https://canvasjs.com/javascript-charts/box-whisker-chart-custom-color/ -->
-  <!-- https://canvasjs.com/jquery-charts/box-whisker-chart/-->
-  <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
+  <!-- https://github.com/datavisyn/chartjs-chart-box-and-violin-plot -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0/dist/Chart.min.js" integrity="sha256-Uv9BNBucvCPipKQ2NS9wYpJmi8DTOEfTA/nH2aoJALw=" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/chartjs-chart-box-and-violin-plot@2/build/Chart.BoxPlot.js"></script>
 </head>
 
 <body>
@@ -24,6 +24,17 @@
 .gauge-canvas {
   top: 0px;
   position: relative;
+}
+
+.histo-canvas {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+.histo-text {
+  vertical-align: text-top;
+  margin: 10px;
 }
 
 .gauge-text {
@@ -141,7 +152,7 @@ td {
   }
   {% endfor %}
 
-  /*Metrics */
+  /* Meters */
   {% for L in config %}
     {% for meter in L.meters %}
       var ${{L.id}}_meter_{{meter.id}} = null;
@@ -203,34 +214,61 @@ td {
         }
         {% endfor %}
 
-        var options = {
-          animationEnabled: false,
-          title: {
-            text: "{{histo.label}}"
-          },
-          axisY: {
-            title: "{{histo.title}}",
-            prefix: ""
-          },
-          data: [{
-            type: "boxAndWhisker",
-            upperBoxColor: "#68D46F",
-            lowerBoxColor: "#8062EF",
-            color: "black",
-            yValueFormatString: "##0",
-            dataPoints: [
+        const boxplotData = {
+          // define label tree
+          labels: [
+          {% for evt in histo.events %}
+            String.fromCharCode(64+{{loop.index}}),
+          {% endfor %}
+          ],
+          datasets: [{
+            backgroundColor:  'rgba(0,0,255,0.5)',
+            borderColor: 'rgba(0,0,255,0.5)',
+            borderWidth: 1,
+            outlierColor: '#999999',
+            medianColor:'rgba(255,0,0,0.5)',
+            padding: 10,
+            itemRadius: 0,
+            outlierColor: '#999999',
+            //width: 5,
+            data: [
             {% for evt in histo.events %}
-              { label: "{{evt}}", y: [stats.{{evt}}.quantiles[0.05] * {{histo.factor|default(1)}},
-                                      stats.{{evt}}.quantiles[0.25] * {{histo.factor|default(1)}},
-                                      stats.{{evt}}.quantiles[0.75] * {{histo.factor|default(1)}},
-                                      stats.{{evt}}.quantiles[0.95] * {{histo.factor|default(1)}},
-                                      stats.{{evt}}.quantiles[0.5] * {{histo.factor|default(1)}} ] },
+                          { 'min': stats.{{evt}}.quantiles[0.05] * {{histo.factor|default(1)}},
+                            'q1': stats.{{evt}}.quantiles[0.25] * {{histo.factor|default(1)}},
+                            'q3': stats.{{evt}}.quantiles[0.75] * {{histo.factor|default(1)}},
+                            'max': stats.{{evt}}.quantiles[0.95] * {{histo.factor|default(1)}},
+                            'median': stats.{{evt}}.quantiles[0.5] * {{histo.factor|default(1)}}
+                            },
             {% endfor %}
             ]
           }]
         };
-        $("#chart-{{L.id}}-histo-{{histo.id}}").CanvasJSChart(options);
 
+        const ctx = document.getElementById("chart-{{L.id}}-histo-{{histo.id}}").getContext("2d");
+        window.myBar = new Chart(ctx, {
+          type: 'boxplot',
+          data: boxplotData,
+          options: {
+            responsive: true,
+            legend: {
+              display: false,
+              position: 'top',
+            },
+            title: {
+              display: false,
+              text: ''
+            }
+          }
+        });
+
+
+        var leg = 
+        {% for evt in histo.events %}
+          '<p>'+String.fromCharCode(64+{{loop.index}})+': {{evt}}</p>'+
+        {% endfor %}
+          '';
+        const obj = document.getElementById("chart-{{L.id}}-histo-legend-{{histo.id}}");
+        obj.innerHTML = leg;
       }
     {% endfor %}
   {% endfor %}
@@ -259,7 +297,7 @@ td {
         <span id="line-{{L.id}}-meter-{{meter.id}}">Loading..</span>
       </div>
       <div>
-        <h4>{{meter.label}}</h4>
+        <h4 title="{{meter.label}}">{{meter.label|truncate(10)}}</h4>
       </div>
     </span>
     {% endfor %}
@@ -268,8 +306,9 @@ td {
   <td>
     {% for histo in L.histograms %}
     <span style="display: inline-block;">
-      <div id="chart-{{L.id}}-histo-{{histo.id}}" style="height: 170px; width: {{40+60*histo.events|length}}px;"></div>
+      <canvas class="histo-canvas" id="chart-{{L.id}}-histo-{{histo.id}}" style="height: 170px; width: {{60+30*histo.events|length}}px;"></canvas>
     </span>
+    <span id="chart-{{L.id}}-histo-legend-{{histo.id}}" style="display: inline-block; float: right" class="histo-text"></span>
     {% endfor %}
   </td>
 </tr>
