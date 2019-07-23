@@ -32,6 +32,7 @@ For example:
         event: test
         result: ok
         color: green
+        max: 1000
       histograms:
       - label: Exec Time
         id: h1
@@ -50,7 +51,6 @@ It must be unique.
 """
 
 # XXX: color of the whisker
-# XXX: max of meters
 
 import os
 import logging
