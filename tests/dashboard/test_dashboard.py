@@ -65,6 +65,14 @@ class TestDashboard(unittest.TestCase):
         with requests.get('http://localhost:9000/histograms', params=payload) as r:
             self.assertEqual(500,r.status_code)
 
+        payload = {'server': 'http://localhost:7070/monitoring/v1'}
+        with requests.get('http://localhost:9000/gauges', params=payload) as r:
+            self.assertEqual(200,r.status_code)
+
+        payload = {'server': 'http://localhost:7070/monitoring/missing'}
+        with requests.get('http://localhost:9000/gauges', params=payload) as r:
+            self.assertEqual(500,r.status_code)
+
 # ______________________________________________________________________________
 if __name__=='__main__':
     unittest.main(argv=['-v'])
