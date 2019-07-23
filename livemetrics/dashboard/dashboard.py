@@ -15,8 +15,8 @@ And then access http://localhost:9000/ to visualize the dashboard.
 
 The configuration file describes:
 
-- The rows in the dashboard. One row corresponds to a set of meters/histograms from one server.
-- For each row, a list of meters and a list of hstograms.
+- The rows in the dashboard. One row corresponds to a set of meters/histograms/gauges from one server.
+- For each row, a list of meters, a list of histograms, and a list of gauges.
 
 For example:
 
@@ -38,6 +38,11 @@ For example:
         events: [time]
         title: ms
         factor: 1000
+      gauges:
+      - label: "# Files"
+        id: files
+        name: nb_files
+        factor: 1
 
 The tag ``id`` is used to construct the id of the HTML objects.
 It must be unique.
@@ -108,6 +113,22 @@ class DashBoardHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             params = parse_qs(pr.query)
             try:
                 with urllib.request.urlopen(params['server'][0]+'/metrics/histograms') as obj:
+                    buf = obj.read()
+                    self.send_response(200)
+                    self.send_header("Content-Type","application/json")
+                    self.send_header("Content-Length", str(len(buf)))
+                    self.end_headers()
+                    self.wfile.write(buf)
+                    return
+            except:
+                self.send_response(500)
+                self.end_headers()
+                return
+        elif self.path.startswith('/gauges'):
+            pr = urlparse(self.path)
+            params = parse_qs(pr.query)
+            try:
+                with urllib.request.urlopen(params['server'][0]+'/metrics/gauges') as obj:
                     buf = obj.read()
                     self.send_response(200)
                     self.send_header("Content-Type","application/json")

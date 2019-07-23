@@ -20,7 +20,36 @@
 
 <body>
   <style>
+
+.gauge-container {
+  height: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.gauge-container .box {
+  text-align: center;
+  font-family: sans-serif;
+  padding: 10px;
   
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+  
+.gauge-container .box-value {
+  flex: 1;
+  font-size: 130%;
+  font-weight: bold;
+  vertical-align: center;
+}
+
+.gauge-container .box-label {
+  font-size: 100%;
+  font-weight: bold;
+}
+
 .gauge-canvas {
   top: 0px;
   position: relative;
@@ -105,6 +134,7 @@ td {
       {% for histo in L.histograms %}
         init_{{L.id}}_histo_{{histo.id}}();
       {% endfor %}
+      init_{{L.id}}_gauges();
     {% endfor %}
 
     refresh_values();
@@ -135,6 +165,12 @@ td {
           update_{{L.id}}_histo_{{histo.id}}(null);
       });
     {% endfor %}
+
+      $.get("gauges", {server: "{{L.server}}"}, function(stats,status) {
+          update_{{L.id}}_gauges(stats)
+        }).fail(function() {
+          update_{{L.id}}_gauges(null)
+        });
 
     {% endfor %}
   }
@@ -267,11 +303,38 @@ td {
           '<p>'+String.fromCharCode(64+{{loop.index}})+': {{evt}}</p>'+
         {% endfor %}
           '';
-        const obj = document.getElementById("chart-{{L.id}}-histo-legend-{{histo.id}}");
-        obj.innerHTML = leg;
+        const obj_{{L.id}}_{{histo.id}} = document.getElementById("chart-{{L.id}}-histo-legend-{{histo.id}}");
+        obj_{{L.id}}_{{histo.id}}.innerHTML = leg;
       }
     {% endfor %}
   {% endfor %}
+
+
+  {% for L in config %}
+      function init_{{L.id}}_gauges() {
+      }
+
+      function update_{{L.id}}_gauges(stats) {
+        // Provide default values if gauges does not exist yet
+        if (stats==null) {
+          stats = Object();
+        }
+        {% for gauge in L.gauges %}
+        if (!stats.hasOwnProperty("{{gauge.name}}")) {
+          stats.{{gauge.name}} = {"min": 0, "max": 0, "count": 0};
+        }
+        {% endfor %}
+
+        {% for gauge in L.gauges %}
+
+          const obj_{{L.id}}_{{gauge.id}} = document.getElementById("gauge-{{L.id}}-{{gauge.id}}");
+          obj_{{L.id}}_{{gauge.id}}.innerHTML = stats.{{gauge.name}}.count * {{gauge.factor|default(1)}};
+
+        {% endfor %}
+
+      }
+  {% endfor %}
+
 
   </script>
 
@@ -311,6 +374,15 @@ td {
     <span id="chart-{{L.id}}-histo-legend-{{histo.id}}" style="display: inline-block; float: right" class="histo-text"></span>
     {% endfor %}
   </td>
+
+  {% for gauge in L.gauges %}
+  <td style="height: 100%; vertical-align: middle">
+    <div style="height: 100%" class="gauge-container">
+      <div id="gauge-{{L.id}}-{{gauge.id}}" class="box box-value"></div>
+      <div class="box box-label">{{gauge.label}}</div>
+    </div>
+  </td>
+  {% endfor %}
 </tr>
 
 
