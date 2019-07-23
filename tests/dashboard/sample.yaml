@@ -50,7 +50,12 @@
       event: test
       result: ok
       color: green
-
+  gauges:
+    - label: "Random"
+      id: random
+      name: random
+      factor: 10
+  
 - label: Always missing
   id: server3
   server: http://localhost:9999/monitoring/v1

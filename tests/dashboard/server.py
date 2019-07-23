@@ -10,6 +10,8 @@ import tests.publishers
 
 LM = livemetrics.LiveMetrics('{"version":"1.0"}',"Test server",True, True)
 
+LM.gauge("random",lambda: random.randint(1,10))
+
 #______________________________________________________________________________
 class TestHTTPRequestHandler(livemetrics.publishers.http.HTTPRequestHandler):
 

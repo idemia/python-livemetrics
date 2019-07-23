@@ -68,6 +68,7 @@ class TestDashboard(unittest.TestCase):
         payload = {'server': 'http://localhost:7070/monitoring/v1'}
         with requests.get('http://localhost:9000/gauges', params=payload) as r:
             self.assertEqual(200,r.status_code)
+            self.assertGreater(r.json()['random']['count'],0)
 
         payload = {'server': 'http://localhost:7070/monitoring/missing'}
         with requests.get('http://localhost:9000/gauges', params=payload) as r:
