@@ -156,6 +156,7 @@ True
 
 """
 
+import os
 import time
 import collections
 from functools import wraps
@@ -168,7 +169,31 @@ __author__ = "Olivier Heurtier"
 __copyright__ = "IDEMIA"
 __license__ = "CeCILL-C"
 
+if os.name=='posix':
+    def get_memory():
+        # Retrieve memory usage from /proc/self/statm
+        try:
+            with open('/proc/self/statm','r') as f:
+                return int(f.read().split(' ')[0])*1024
+        except:
+            return 0
 
+    __CPU = None
+    def get_cpu():
+        with open('/proc/self/stat','r') as f:
+            utime = float(f.read().split(' ')[14-1]) / os.sysconf('SC_CLK_TCK')
+            now = time.time()
+            print(now,utime)
+            global __CPU
+            if __CPU is None:
+                __CPU = (now,utime)
+                return 0
+
+            result = (utime-__CPU[1])/(now-__CPU[0])
+            __CPU = (now,utime)
+            return int(result*100)
+                
+    # 20: num_threads
 #______________________________________________________________________________
 class LiveMetrics(object):
     """
@@ -176,7 +201,7 @@ class LiveMetrics(object):
 
     """
 
-    def __init__(self,version,about,is_healthy,is_ready=None):
+    def __init__(self,version,about,is_healthy,is_ready=None,memory_and_cpu=True):
         """
         Contructor.
 
@@ -190,6 +215,10 @@ class LiveMetrics(object):
         *is_ready*: a function called to know if the application is ready to process requests or not.
         Function must have no parameter and return a boolean.
         If None is provided, *is_healthy* is used.
+        
+        *memory_and_cpu*: a flag to activate gauges to report the memory and CPU usage (on Linux only)
+        Default is True.
+        
         """
         self.version = version
         self.about = about
@@ -207,6 +236,10 @@ class LiveMetrics(object):
         self._meters = collections.defaultdict( lambda: collections.defaultdict(Meter) )
         self._gauges = collections.defaultdict( Gauge )
         self._histograms = collections.defaultdict( Histogram )
+
+        if memory_and_cpu and os.name=='posix':
+            self.gauge('memory',get_memory)
+            self.gauge('cpu',get_cpu)
 
     def mark(self,event,result):
         """

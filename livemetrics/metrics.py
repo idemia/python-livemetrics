@@ -102,8 +102,6 @@ class Gauge(object):
         """
         Return the minimum value ever registered in this gauge.
         """
-        if self._callable:
-            self.mark(self._callable())
         return self._min
 
     @property
@@ -111,8 +109,6 @@ class Gauge(object):
         """
         Return the maximum value ever registered in this gauge.
         """
-        if self._callable:
-            self.mark(self._callable())
         return self._max
 
     def to_dict(self):
