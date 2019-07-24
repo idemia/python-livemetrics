@@ -56,7 +56,7 @@ True
 
 For gauges, here is an example:
 
->>> lm = LiveMetrics("version","about",lambda: True)
+>>> lm = LiveMetrics("version","about", lambda: True, memory_and_cpu=False)
 >>> lm.gauge('G',10)
 >>> lm.gauge('G',15)
 >>> lm.gauge('G',20)
@@ -183,7 +183,6 @@ if os.name=='posix':
         with open('/proc/self/stat','r') as f:
             utime = float(f.read().split(' ')[14-1]) / os.sysconf('SC_CLK_TCK')
             now = time.time()
-            print(now,utime)
             global __CPU
             if __CPU is None:
                 __CPU = (now,utime)
