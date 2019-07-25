@@ -174,23 +174,26 @@ if os.name=='posix':
         # Retrieve memory usage from /proc/self/statm
         try:
             with open('/proc/self/statm','r') as f:
-                return int(f.read().split(' ')[0])*1024
+                return int(f.read().split(' ')[0]) *  os.sysconf('PAGE_SIZE')
         except:
             return 0
 
     __CPU = None
     def get_cpu():
-        with open('/proc/self/stat','r') as f:
-            utime = float(f.read().split(' ')[14-1]) / os.sysconf('SC_CLK_TCK')
-            now = time.time()
-            global __CPU
-            if __CPU is None:
-                __CPU = (now,utime)
-                return 0
+        try:
+            with open('/proc/self/stat','r') as f:
+                utime = float(f.read().split(' ')[14-1]) / os.sysconf('SC_CLK_TCK')
+                now = time.time()
+                global __CPU
+                if __CPU is None:
+                    __CPU = (now,utime)
+                    return 0
 
-            result = (utime-__CPU[1])/(now-__CPU[0])
-            __CPU = (now,utime)
-            return int(result*100)
+                result = (utime-__CPU[1])/(now-__CPU[0])
+                __CPU = (now,utime)
+                return int(result*100)
+        except:
+            return 0
                 
     # 20: num_threads
 #______________________________________________________________________________
