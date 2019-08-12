@@ -18,35 +18,53 @@ The configuration file describes:
 - The rows in the dashboard. One row corresponds to a set of meters/histograms/gauges from one server.
 - For each row, a list of meters, a list of histograms, and a list of gauges.
 
+The configuration can define variables and reuse them in the rest of the file using Jinja2 syntax (``{{var}}``).
+
 For example:
 
 .. code-block:: yaml
 
     ---
-    - label: Sample
-      id: server1
+    vars:
       server: http://localhost:7070/monitoring/v1
-      meters:
-      - label: Test OK
-        id: t1
-        event: test
-        result: ok
-        color: green
-        max: 1000
-      histograms:
-      - label: Exec Time
-        id: h1
-        events: [time]
-        title: ms
-        factor: 1000
-      gauges:
-      - label: "# Files"
-        id: files
-        name: nb_files
-        factor: 1
-
-The tag ``id`` is used to construct the id of the HTML objects.
-It must be unique.
+    title: Sample
+    rows:
+    - label: First Line
+      cells:
+      - label: Line 1
+        type: label
+      - label: Health
+        server: "{{server}}/is_healthy"
+        type: status
+      - label: CPU
+        server: "{{server}}/metrics/gauges/cpu/count"
+        type: value
+        unit: "%"
+        factor: "*100"
+        color: "blue"
+      - label: Memory
+        server: "{{server}}/metrics/gauges/memory/count"
+        type: gauge
+        unit: MB
+        factor: "/1048576"
+        max: 100
+        gauge_color: blue
+        color: "#C0D0F0"
+      - type: empty
+      - label: Time
+        server: "{{server}}/metrics/histograms/time"
+        type: histogram
+        unit: ms
+        factor: "*1000"
+        color: blue
+      - label: Test
+        server: "{{server}}/metrics/meters/test/ok/rate1"
+        type: gauge
+        unit: "/h"
+        factor: "*3600"
+        gauge_color: green
+        color: "#C0F0C0"
+        max: 25000
 
 """
 
@@ -71,7 +89,25 @@ class DashBoardHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     def __init__(self, request, client_address, server, options):
         if DashBoardHTTPRequestHandler.conf is None:
-            DashBoardHTTPRequestHandler.conf = yaml.load(options.input,Loader=yaml.Loader)
+            DashBoardHTTPRequestHandler.conf = 1
+
+            conf = yaml.load(options.input,Loader=yaml.Loader)
+
+            # Extract vars and apply
+            vars = conf.get('vars',{})
+            env = Environment(loader=FileSystemLoader([".",'/']))
+            template = env.get_template(options.input.name)
+            buf = template.render(**vars)
+
+            DashBoardHTTPRequestHandler.conf = yaml.load(buf,Loader=yaml.Loader)
+
+            # generate ids
+            i = 1
+            for r in DashBoardHTTPRequestHandler.conf['rows']:
+                for c in r['cells']:
+                    c['id'] = str("id%d"%i)
+                    i += 1
+
         super().__init__(request, client_address, server)
 
     def end_headers(self):
@@ -92,70 +128,20 @@ class DashBoardHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(buf.encode('utf-8'))
             return
-        elif self.path.startswith('/metrics'):
+        elif self.path.startswith('/all'):
             pr = urlparse(self.path)
             params = parse_qs(pr.query)
             try:
-                with urllib.request.urlopen(params['server'][0]+'/metrics/meters/'+params['event'][0]+'/'+params['result'][0]) as obj:
+                with urllib.request.urlopen(params['server'][0]) as obj:
                     buf = obj.read()
-                    self.send_response(200)
-                    self.send_header("Content-Type","application/json")
+                    self.send_response(obj.getcode())
+                    if 'content-type' in obj.info():
+                        self.send_header("Content-Type",obj.info()['content-type'])
                     self.send_header("Content-Length", str(len(buf)))
                     self.end_headers()
                     self.wfile.write(buf)
                     return
             except:
-                self.send_response(500)
-                self.end_headers()
-                return
-        elif self.path.startswith('/histograms'):
-            pr = urlparse(self.path)
-            params = parse_qs(pr.query)
-            try:
-                with urllib.request.urlopen(params['server'][0]+'/metrics/histograms') as obj:
-                    buf = obj.read()
-                    self.send_response(200)
-                    self.send_header("Content-Type","application/json")
-                    self.send_header("Content-Length", str(len(buf)))
-                    self.end_headers()
-                    self.wfile.write(buf)
-                    return
-            except:
-                self.send_response(500)
-                self.end_headers()
-                return
-        elif self.path.startswith('/gauges'):
-            pr = urlparse(self.path)
-            params = parse_qs(pr.query)
-            try:
-                with urllib.request.urlopen(params['server'][0]+'/metrics/gauges') as obj:
-                    buf = obj.read()
-                    self.send_response(200)
-                    self.send_header("Content-Type","application/json")
-                    self.send_header("Content-Length", str(len(buf)))
-                    self.end_headers()
-                    self.wfile.write(buf)
-                    return
-            except:
-                self.send_response(500)
-                self.end_headers()
-                return
-        elif self.path.startswith('/is_healthy'):
-            pr = urlparse(self.path)
-            params = parse_qs(pr.query)
-            try:
-                with urllib.request.urlopen(params['server'][0]+'/is_healthy') as obj:
-                    if obj.getcode()==200:
-                        self.send_response(200)
-                    else:
-                        self.send_response(500)
-                    buf = b"{}"
-                    self.send_header("Content-Type","application/json")
-                    self.send_header("Content-Length", str(len(buf)))
-                    self.end_headers()
-                    self.wfile.write(buf)
-                    return
-            except Exception as exc:
                 self.send_response(500)
                 self.end_headers()
                 return

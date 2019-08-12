@@ -35,44 +35,28 @@ class TestDashboard(unittest.TestCase):
         with requests.get('http://localhost:9000/') as r:
             self.assertEqual(200,r.status_code)
 
-        payload = {'server': 'http://localhost:7070/monitoring/v1'}
-        with requests.get('http://localhost:9000/is_healthy', params=payload) as r:
+        payload = {'server': 'http://localhost:7070/monitoring/v1/is_healthy'}
+        with requests.get('http://localhost:9000/all', params=payload) as r:
             self.assertEqual(200,r.status_code)
 
         payload = {'server': 'http://localhost:7070/monitoring/missing'}
-        with requests.get('http://localhost:9000/is_healthy', params=payload) as r:
+        with requests.get('http://localhost:9000/all', params=payload) as r:
             self.assertEqual(500,r.status_code)
 
-        payload = {'server': 'http://localhost:7070/monitoring/v1',
-                   'event': 'test',
-                   'result': 'ok'}
-        with requests.get('http://localhost:9000/metrics', params=payload) as r:
+        payload = {'server': 'http://localhost:7070/monitoring/v1/metrics/meters/test/ok'}
+        with requests.get('http://localhost:9000/all', params=payload) as r:
             self.assertEqual(200,r.status_code)
             self.assertGreater(r.json()['count'],2)
 
-        payload = {'server': 'http://localhost:7070/monitoring/missing',
-                   'event': 'test',
-                   'result': 'ok'}
-        with requests.get('http://localhost:9000/metrics', params=payload) as r:
-            self.assertEqual(500,r.status_code)
-
-        payload = {'server': 'http://localhost:7070/monitoring/v1'}
-        with requests.get('http://localhost:9000/histograms', params=payload) as r:
+        payload = {'server': 'http://localhost:7070/monitoring/v1/metrics/histograms'}
+        with requests.get('http://localhost:9000/all', params=payload) as r:
             self.assertEqual(200,r.status_code)
             self.assertGreater(r.json()['values']['count'],2)
 
-        payload = {'server': 'http://localhost:7070/monitoring/missing'}
-        with requests.get('http://localhost:9000/histograms', params=payload) as r:
-            self.assertEqual(500,r.status_code)
-
-        payload = {'server': 'http://localhost:7070/monitoring/v1'}
-        with requests.get('http://localhost:9000/gauges', params=payload) as r:
+        payload = {'server': 'http://localhost:7070/monitoring/v1/metrics/gauges'}
+        with requests.get('http://localhost:9000/all', params=payload) as r:
             self.assertEqual(200,r.status_code)
             self.assertGreater(r.json()['random']['count'],0)
-
-        payload = {'server': 'http://localhost:7070/monitoring/missing'}
-        with requests.get('http://localhost:9000/gauges', params=payload) as r:
-            self.assertEqual(500,r.status_code)
 
 # ______________________________________________________________________________
 if __name__=='__main__':

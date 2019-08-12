@@ -174,7 +174,7 @@ if os.name=='posix':
         # Retrieve memory usage from /proc/self/statm
         try:
             with open('/proc/self/statm','r') as f:
-                return int(f.read().split(' ')[0]) *  os.sysconf('PAGE_SIZE')
+                return int(f.read().split(' ')[0]) *  os.sysconf('SC_PAGE_SIZE')
         except:
             return 0
 

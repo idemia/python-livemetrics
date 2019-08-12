@@ -1,73 +1,42 @@
 ---
+vars:
+  server: http://localhost:7070/monitoring/v1
+title: Sample
+rows:
 - label: First Line
-  id: server1
-  server: http://localhost:7070/monitoring/v1
-  histograms:
-    - label: Test 1
-      id: t1
-      events: [values,time]
-      title: Value
-      factor: 1
-    - label: Test 2
-      id: t2
-      events: [time]
-      title: ms
-      factor: 1000
-  meters:
-    - label: Test OK
-      id: t1
-      event: test
-      result: ok
-      color: green
-    - label: Test Error
-      id: t2
-      event: test
-      result: error
-      color: red
+  cells:
+  - label: Line 1
+    type: label
+  - label: Health
+    server: "{{server}}/is_healthy"
+    type: status
+  - label: CPU
+    server: "{{server}}/metrics/gauges/cpu/count"
+    type: value
+    unit: "%"
+    factor: "*100"
+    color: "blue"
+  - label: Memory
+    server: "{{server}}/metrics/gauges/memory/count"
+    type: gauge
+    unit: MB
+    factor: "/1048576"
+    max: 100
+    gauge_color: blue
+    color: "#C0D0F0"
+  - type: empty
+  - label: Time
+    server: "{{server}}/metrics/histograms/time"
+    type: histogram
+    unit: ms
+    factor: "*1000"
+    color: blue
+  - label: Test
+    server: "{{server}}/metrics/meters/test/ok/rate1"
+    type: gauge
+    unit: "/h"
+    factor: "*3600"
+    gauge_color: green
+    color: "#C0F0C0"
+    max: 25000
 
-- label: Second Line
-  id: server2
-  server: http://localhost:7070/monitoring/v1
-  histograms:
-    - label: Test 2
-      id: t2
-      events: [time]
-      title: ms
-      factor: 1000
-    - label: Test 1
-      id: t1
-      events: [values,time]
-      title: Value
-      factor: 1
-  meters:
-    - label: Test Error
-      id: t2
-      event: test
-      result: error
-      color: red
-    - label: Test OK
-      id: t1
-      event: test
-      result: ok
-      color: green
-  gauges:
-    - label: "Random"
-      id: random
-      name: random
-      factor: 10
-  
-- label: Always missing
-  id: server3
-  server: http://localhost:9999/monitoring/v1
-  histograms:
-    - label: Test 1
-      id: t1
-      events: [values,time]
-      title: Value
-      factor: 1
-  meters:
-    - label: Test OK
-      id: t1
-      event: test
-      result: ok
-      color: green
