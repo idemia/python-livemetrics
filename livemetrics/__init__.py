@@ -179,23 +179,32 @@ if os.name=='posix':
             return 0
 
     __CPU = None
+    __CPU_RESULT = 0
     def get_cpu():
+        # Retrieve CPU usage from /proc/self/stat
+        global __CPU
+        global __CPU_RESULT
         try:
             with open('/proc/self/stat','r') as f:
+                # 14th value is the user time
+                # (note: 20th is the number of threads, could be useful)
                 utime = float(f.read().split(' ')[14-1]) / os.sysconf('SC_CLK_TCK')
                 now = time.time()
-                global __CPU
                 if __CPU is None:
                     __CPU = (now,utime)
-                    return 0
+                    __CPU_RESULT = 0
+                    return __CPU_RESULT
 
+                # Getting 2 consecutive values very close can give bad value
+                if now-__CPU[0] < 0.3:
+                    return __CPU_RESULT
                 result = (utime-__CPU[1])/(now-__CPU[0])
                 __CPU = (now,utime)
-                return int(result*100)
+                __CPU_RESULT = int(result*100)
+                return __CPU_RESULT
         except:
             return 0
                 
-    # 20: num_threads
 #______________________________________________________________________________
 class LiveMetrics(object):
     """
@@ -403,7 +412,7 @@ class LiveMetrics(object):
                 gauge = self._gauges[name]
             else:
                 # Build a temporary empty object (do not fail - maybe the gauge will exist later)
-                gauge = Gauge()
+                gauge = Gauge(0)
             if metric:
                 return getattr(gauge,metric)
             return gauge.to_dict()

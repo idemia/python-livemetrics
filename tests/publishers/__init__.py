@@ -1,4 +1,6 @@
 
+import os
+import time
 import unittest
 import requests
 
@@ -35,7 +37,10 @@ class TestPublisher(unittest.TestCase):
             self.assertEqual(5,r.json()['count'])
         with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/meters/test/ok/count') as r:
             self.assertEqual(5,r.json())
-
+        # Missing meter
+        with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/meters/missing/ok/count') as r:
+            self.assertEqual(0,r.json())
+    
         # Gauges
         with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/gauges') as r:
             self.assertEqual(10,r.json()['fixed']['count'])
@@ -43,7 +48,10 @@ class TestPublisher(unittest.TestCase):
             self.assertEqual(10,r.json()['count'])
         with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/gauges/fixed/count') as r:
             self.assertEqual(10,r.json())
-
+        # Missing gauge
+        with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/gauges/missing/count') as r:
+            self.assertEqual(0,r.json())
+    
         # Histograms
         with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/histograms') as r:
             self.assertGreater(20,r.json()['histo']['quantiles']['0.5'])
@@ -58,7 +66,10 @@ class TestPublisher(unittest.TestCase):
         with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/histograms/histo/count?bad_param=2') as r:
             self.assertEqual(400,r.status_code)
             self.assertEqual(b"Invalid query parameters: bad_param",r.content)
-
+        # Missing histogram
+        with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/histograms/missing/count') as r:
+            self.assertEqual(0,r.json())
+    
         # Histograms with errors
         with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/histograms/histo/quantiles?bad_param=0.5&bad2=1') as r:
             self.assertEqual(400,r.status_code)
@@ -93,3 +104,17 @@ class TestPublisher(unittest.TestCase):
         self.LM.is_healthy = backup_ih
         self.LM.is_ready = backup_ir
 
+        # Test memory & CPU
+        if not os.name=='posix':
+            return
+
+        with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/gauges/memory/count') as r:
+            self.assertGreater(r.json(),20000000)
+
+        with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/gauges/cpu/count') as r:
+            cpu = r.json()
+        with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/gauges/cpu/count') as r:
+            self.assertEqual(cpu,r.json())
+        time.sleep(0.5)
+        with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/gauges/cpu/count') as r:
+            self.assertGreater(cpu,r.json())
