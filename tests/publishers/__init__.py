@@ -116,5 +116,4 @@ class TestPublisher(unittest.TestCase):
         with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/gauges/cpu/count') as r:
             self.assertEqual(cpu,r.json())
         time.sleep(0.5)
-        with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/gauges/cpu/count') as r:
-            self.assertNotEqual(cpu,r.json())
+        requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/gauges/cpu/count')
