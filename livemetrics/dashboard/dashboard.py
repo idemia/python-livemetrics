@@ -18,15 +18,16 @@ The configuration file describes:
 - The rows in the dashboard. One row corresponds to a set of meters/histograms/gauges from one server.
 - For each row, a list of meters, a list of histograms, and a list of gauges.
 
-The configuration can define variables and reuse them in the rest of the file using Jinja2 syntax (``{{var}}``).
+The configuration file is a Jinja2 template used to generate a YAML file.
+All macros and filters of Jinja2 are available, making possible to define template or macros for
+comple cases.
 
 For example:
 
 .. code-block:: yaml
 
+    {% set server = "http://localhost:7070/monitoring/v1" %}
     ---
-    vars:
-      server: http://localhost:7070/monitoring/v1
     title: Sample
     rows:
     - label: First Line
@@ -82,7 +83,7 @@ import json
 import yaml
 from urllib.parse import urlparse,parse_qs
 
-from jinja2 import Template,Environment,FileSystemLoader,PrefixLoader
+from jinja2 import Template,Environment,FileSystemLoader,PrefixLoader,ChoiceLoader
 
 class DashBoardHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     conf = None
@@ -91,13 +92,12 @@ class DashBoardHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         if DashBoardHTTPRequestHandler.conf is None:
             DashBoardHTTPRequestHandler.conf = 1
 
-            conf = yaml.load(options.input,Loader=yaml.Loader)
+            myself = {'self':     FileSystemLoader(os.path.dirname(__file__)) }
+            loader = PrefixLoader(myself)
 
-            # Extract vars and apply
-            vars = conf.get('vars',{})
-            env = Environment(loader=FileSystemLoader([".",'/']))
+            env = Environment(loader=ChoiceLoader([FileSystemLoader([".",'/']), loader]))
             template = env.get_template(options.input.name)
-            buf = template.render(**vars)
+            buf = template.render()
 
             DashBoardHTTPRequestHandler.conf = yaml.load(buf,Loader=yaml.Loader)
 

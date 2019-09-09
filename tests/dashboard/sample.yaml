@@ -1,6 +1,5 @@
+{% set server = "http://localhost:7070/monitoring/v1" %}
 ---
-vars:
-  server: http://localhost:7070/monitoring/v1
 title: Sample
 rows:
 - label: First Line
