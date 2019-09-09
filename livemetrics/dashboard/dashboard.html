@@ -262,14 +262,13 @@ td {
             // define label tree
             labels: ["{{C.unit}}"],
             datasets: [{
-              backgroundColor:  'rgba(0,0,255,0.5)',
-              borderColor: 'rgba(0,0,255,0.5)',
+              backgroundColor:  '{{C.color|default("rgba(0,0,255,0.5)")}}',
+              borderColor: '{{C.color|default("rgba(0,0,255,0.5)")}}',
               borderWidth: 1,
               outlierColor: '#999999',
-              medianColor:'rgba(255,0,0,0.5)',
+              medianColor:'{{C.median_color|default("rgba(255,0,0,0.5)")}}',
               padding: 10,
               itemRadius: 0,
-              outlierColor: '#999999',
               //width: 5,
               data: [
                             { 'min':    conv(stats.quantiles[0.05],"{{C.factor|default("*1")}}"),
@@ -360,7 +359,7 @@ td {
           <span style="display: inline-block;">
             <div class="thumbnail centered">
               <div class="value-value" style="height: 143px; width: 100px;">
-                <span id="value-{{C.id}}" ></span><span>&nbsp;{{C.unit}}</span>
+                <span id="value-{{C.id}}" style="color: {{C.color}}"></span><span style="color: {{C.color}}">&nbsp;{{C.unit}}</span>
               </div>
             </div>
             <div>

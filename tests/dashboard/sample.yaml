@@ -14,13 +14,13 @@ rows:
     type: value
     unit: "%"
     factor: "*100"
-    color: "blue"
+    color: green
   - label: Memory
     server: "{{server}}/metrics/gauges/memory/count"
     type: gauge
     unit: MB
     factor: "/1048576"
-    max: 100
+    max: 256
     gauge_color: blue
     color: "#C0D0F0"
   - type: empty
@@ -29,7 +29,8 @@ rows:
     type: histogram
     unit: ms
     factor: "*1000"
-    color: blue
+    color: "#ff000080"
+    median_color: green
   - label: Test
     server: "{{server}}/metrics/meters/test/ok/rate1"
     type: gauge

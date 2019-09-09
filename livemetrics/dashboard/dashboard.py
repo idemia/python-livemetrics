@@ -13,18 +13,16 @@ Run with::
 
 And then access http://localhost:9000/ to visualize the dashboard.
 
-The configuration file describes:
-
-- The rows in the dashboard. One row corresponds to a set of meters/histograms/gauges from one server.
-- For each row, a list of meters, a list of histograms, and a list of gauges.
+The configuration file describes rows, and for each row the cells to display. Each cell is associated
+to one value (or to the statistics of one value for histograms).
 
 The configuration file is a Jinja2 template used to generate a YAML file.
 All macros and filters of Jinja2 are available, making possible to define template or macros for
-comple cases.
+complex cases.
 
-For example:
+A simple example:
 
-.. code-block:: yaml
+.. code-block:: jinja
 
     {% set server = "http://localhost:7070/monitoring/v1" %}
     ---
@@ -42,13 +40,13 @@ For example:
         type: value
         unit: "%"
         factor: "*100"
-        color: "blue"
+        color: green
       - label: Memory
         server: "{{server}}/metrics/gauges/memory/count"
         type: gauge
         unit: MB
         factor: "/1048576"
-        max: 100
+        max: 256
         gauge_color: blue
         color: "#C0D0F0"
       - type: empty
@@ -57,7 +55,8 @@ For example:
         type: histogram
         unit: ms
         factor: "*1000"
-        color: blue
+        color: "#ff000080"
+        median_color: green
       - label: Test
         server: "{{server}}/metrics/meters/test/ok/rate1"
         type: gauge
@@ -67,9 +66,52 @@ For example:
         color: "#C0F0C0"
         max: 25000
 
-"""
+The cells can be of the following types:
 
-# XXX: color of the whisker
+.. list-table::
+    :widths: 10 40 50
+
+    * - Type
+      - Description
+      - Options
+
+    * - ``empty``
+      - Display an empty cell
+      - - N/A
+    * - ``label``
+      - Display a static text
+      - - ``label``: The text to display
+    * - ``status``
+      - Display a boolean value as a colored icon
+      - - ``label``: A text displayed below the icon
+        - ``server``: The full URL used to get the boolean value
+    * - ``value``
+      - Display a numeric value as a text
+      - - ``label``: A text displayed below the value
+        - ``server``: The full URL used to get the value
+        - ``unit``: A small text added after the value
+        - ``factor``: A factor to apply to the value. It must start with ``*`` or ``/`` to indicate the operation to execute
+        - ``color``: The text color
+    * - ``gauge``
+      - Display a numeric value as a gauge and a sparkline showing the recent evolution of the value
+      - - ``label``: A text displayed below the value
+        - ``server``: The full URL used to get the value
+        - ``unit``: A small text added after the label
+        - ``factor``: A factor to apply to the value. It must start with ``*`` or ``/`` to indicate the operation to execute
+        - ``color``: The fill color of the sparkline
+        - ``gauge_color``: The color of the gauge
+        - ``max``: The maximum value of the gauge
+    * - ``histogram``
+      - Display statistics about a value as a whisker box
+      - - ``label``: A text displayed below the value
+        - ``server``: The full URL used to get the statistics. It must return a json dictionary
+          with values for the keys ["0.05", "0.25", "0.75", "0.95", "0.5"]
+        - ``unit``: A small text added as the legend of the diagram
+        - ``factor``: A factor to apply to the value. It must start with ``*`` or ``/`` to indicate the operation to execute
+        - ``color``: The fill color of the box
+        - ``median_color``: The color of the line showing the median value
+
+"""
 
 import os
 import logging
