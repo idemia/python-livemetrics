@@ -1,4 +1,7 @@
 include docs/*
+include docs/_static/*
 include tests/*
+include tests/publishers/*
+include tests/dashboard/*
 include livemetrics/*.py
 include README.rst
