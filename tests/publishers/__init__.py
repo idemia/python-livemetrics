@@ -111,6 +111,10 @@ class TestPublisher(unittest.TestCase):
         with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/gauges/memory/count') as r:
             self.assertGreater(r.json(),20000000)
 
+        with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/gauges/num_threads/count') as r:
+            self.assertGreater(r.json(),2)
+            self.assertLess(r.json(),10)
+
         with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/gauges/cpu/count') as r:
             cpu = r.json()
         with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/gauges/cpu/count') as r:

@@ -186,9 +186,11 @@ if os.name=='posix':
         global __CPU_RESULT
         try:
             with open('/proc/self/stat','r') as f:
-                # 14th value is the user time
+                # 14th value is the user time, 16th value is the user time for children
                 # (note: 20th is the number of threads, could be useful)
-                utime = float(f.read().split(' ')[14-1]) / os.sysconf('SC_CLK_TCK')
+                parts = f.read().split(' ')
+                __NB_THREADS = int(parts[20-1])
+                utime = (float(parts[14-1])+float(parts[16-1])) / os.sysconf('SC_CLK_TCK')
                 now = time.time()
                 if __CPU is None:
                     __CPU = (now,utime)
@@ -204,7 +206,16 @@ if os.name=='posix':
                 return __CPU_RESULT
         except:
             return 0
-                
+
+    def get_num_threads():
+        try:
+            with open('/proc/self/stat','r') as f:
+                #  20th is the number of threads
+                parts = f.read().split(' ')
+                return int(parts[20-1])
+        except:
+            return 0
+
 #______________________________________________________________________________
 class LiveMetrics(object):
     """
@@ -227,8 +238,8 @@ class LiveMetrics(object):
         Function must have no parameter and return a boolean.
         If None is provided, *is_healthy* is used.
         
-        *memory_and_cpu*: a flag to activate gauges to report the memory and CPU usage (on Linux only)
-        Default is True.
+        *memory_and_cpu*: a flag to activate gauges to report the memory (``memory``),
+        number of threads (``num_threads``) and CPU usage (``cpu``) on Linux only. Default is True.
         
         """
         self.version = version
@@ -251,6 +262,7 @@ class LiveMetrics(object):
         if memory_and_cpu and os.name=='posix':
             self.gauge('memory',get_memory)
             self.gauge('cpu',get_cpu)
+            self.gauge('num_threads',get_num_threads)
 
     def mark(self,event,result):
         """
