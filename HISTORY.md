@@ -5,6 +5,7 @@ Release History
 0.4
 ---
 
+- Add support for Python 3.8
 - Add children user time in cpu metric
 - Add metric ``num_threads``
 

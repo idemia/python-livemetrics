@@ -23,10 +23,10 @@ setuptools.setup(
     test_suite = 'tests',
     extras_require = {
         'aiohttp': [
-            'aiohttp >= 3.5',
+            'aiohttp >= 3.6',
         ],
         'django': [
-            'django >= 2.0',
+            'django >= 2.2',
         ],
         'flask': [
             'flask >= 1.0.0',
@@ -38,8 +38,8 @@ setuptools.setup(
     },
     tests_require = [
         'requests',
-        'aiohttp >= 3.5',
-        'django >= 2.0',
+        'aiohttp >= 3.6',
+        'django >= 2.2',
         'flask >= 1.0.0',
         'jinja2 >=2.10.0',
         'PyYAML >= 5.0.0',
@@ -51,6 +51,7 @@ setuptools.setup(
         "Development Status :: 4 - Beta",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "License :: CeCILL-C Free Software License Agreement (CECILL-C)",
         "Operating System :: OS Independent",
     ],

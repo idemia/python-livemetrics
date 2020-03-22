@@ -60,7 +60,7 @@ class TestPublisher(unittest.TestCase):
         with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/histograms/histo/quantiles?percentiles=0.5') as r:
             self.assertGreater(20,r.json()['0.5'])
         with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/histograms/histo/distribution?scale=1') as r:
-            self.assertGreater(r.json()[0],4)
+            self.assertGreater(r.json()[0],3)
         with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/histograms/histo/count') as r:
             self.assertEqual(5,r.json())
         with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/histograms/histo/count?bad_param=2') as r:
