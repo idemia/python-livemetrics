@@ -127,6 +127,11 @@ from urllib.parse import urlparse,parse_qs
 
 from jinja2 import Template,Environment,FileSystemLoader,PrefixLoader,ChoiceLoader
 
+def server_to_list(value):
+    if isinstance(value,list):
+        return '["' + '", "'.join(value) + '"]'
+    return '"{}"'.format(value)
+
 class DashBoardHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     conf = None
 
@@ -138,6 +143,7 @@ class DashBoardHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             loader = PrefixLoader(myself)
 
             env = Environment(loader=ChoiceLoader([FileSystemLoader([".",'/']), loader]))
+            env.filters.update({'server_to_list': server_to_list})
             template = env.get_template(options.input.name)
             buf = template.render()
 
@@ -161,6 +167,7 @@ class DashBoardHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             myself = {'self':     FileSystemLoader(os.path.dirname(__file__)) }
             loader = PrefixLoader(myself)
             env = Environment(loader=loader)
+            env.filters.update({'server_to_list': server_to_list})
 
             template = env.get_template('self/dashboard.html')
             buf = template.render(config=self.conf)
@@ -173,19 +180,41 @@ class DashBoardHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         elif self.path.startswith('/all'):
             pr = urlparse(self.path)
             params = parse_qs(pr.query)
-            try:
-                with urllib.request.urlopen(params['server'][0]) as obj:
-                    buf = obj.read()
-                    self.send_response(obj.getcode())
-                    if 'content-type' in obj.info():
-                        self.send_header("Content-Type",obj.info()['content-type'])
-                    self.send_header("Content-Length", str(len(buf)))
-                    self.end_headers()
-                    self.wfile.write(buf)
-                    return
-            except:
+            val = []
+            co = None
+            ct = None
+            k = 'server'
+            if 'server[]' in params:
+                k = 'server[]'
+            for server in params[k]:
+                try:
+                    with urllib.request.urlopen(server) as obj:
+                        val.append( obj.read() )
+                        co = obj.getcode()
+                        if 'content-type' in obj.info():
+                            ct = obj.info()['content-type']
+                except:
+                    val.append(None)
+            if len(val)==1 and val[0] is None:
                 self.send_response(500)
                 self.end_headers()
+                return
+            elif len(val)==1:
+                self.send_response(co)
+                if ct:
+                    self.send_header("Content-Type",obj.info()['content-type'])
+                self.send_header("Content-Length", str(len(val[0])))
+                self.end_headers()
+                self.wfile.write(val[0])
+                return
+            else:  # value of values to return
+                # Only json is supported
+                buf = json.dumps([v and json.loads(v) for v in val]).encode('latin-1')
+                self.send_response(200)
+                self.send_header("Content-Type","application/json")
+                self.send_header("Content-Length", str(len(buf)))
+                self.end_headers()
+                self.wfile.write(buf)
                 return
         return super().do_GET()
 

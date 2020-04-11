@@ -149,11 +149,16 @@ td {
   function refresh_values() {
     {% for R in config.rows %}
       {% for C in R.cells %}
-        $.get("all", {server: "{{C.server}}"}, function(stats,status) {
-          update_{{C.id}}(stats,status);
-        }).fail(function() {
-          update_{{C.id}}(null,false);
-        });
+        {% if C.type == 'label' %}
+        {% elif C.type =='empty' %}
+        {% else %}
+          $.get("all", {server: {{C.server|server_to_list}} }, function(stats,status) {
+          //$.get("all", {server: ["abc", "cd"]}, function(stats,status) {
+            update_{{C.id}}(stats,status);
+          }).fail(function() {
+            update_{{C.id}}(null,false);
+          });
+        {% endif %}
       {% endfor %}
     {% endfor %}
   }
@@ -165,6 +170,24 @@ td {
     if (factor.slice(0,1)=='/') {
       return val / factor.slice(1);
     }
+  }
+
+  function reduce(vals,ope) {
+    if (!Array.isArray(vals)) {
+      return vals;
+    }
+
+    s = 0;
+    for (val of vals) {
+      s += val;
+    }
+    if (ope=="average") {
+      return s / vals.length;
+    }
+    if (ope=="sum") {
+      return s;
+    }
+    return 0;
   }
 
   /* Init and update function */
@@ -231,11 +254,11 @@ td {
           }
 
           const obj_{{C.id}} = document.getElementById("value-{{C.id}}");
-          obj_{{C.id}}.innerHTML = conv(stats,"{{C.factor|default("*1")}}");
+          obj_{{C.id}}.innerHTML = conv(reduce(stats,"{{C.operator|default("sum")}}"),"{{C.factor|default("*1")}}");
 
         {% elif C.type == 'gauge' %}
 
-          var value = conv(stats,"{{C.factor|default("*1")}}");
+          var value = conv(reduce(stats,"{{C.operator|default("sum")}}"),"{{C.factor|default("*1")}}");
 
           ${{C.id}}_gauge.set(Math.min(value,{{C.max|default(25000)}}));
 

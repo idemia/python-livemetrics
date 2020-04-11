@@ -31,7 +31,7 @@ rows:
     factor: "*1000"
     color: "#ff000080"
     median_color: green
-  - label: Test
+  - label: Test OK
     server: "{{server}}/metrics/meters/test/ok/rate1"
     type: gauge
     unit: "/h"
@@ -39,4 +39,31 @@ rows:
     gauge_color: green
     color: "#C0F0C0"
     max: 25000
+  - label: Test Error
+    server: "{{server}}/metrics/meters/test/error/rate1"
+    type: gauge
+    unit: "/h"
+    factor: "*3600"
+    gauge_color: red
+    color: "#F0C0C0"
+    max: 25000
+  - label: OK+Error
+    server: ["{{server}}/metrics/meters/test/ok/rate1", "{{server}}/metrics/meters/test/error/rate1"]
+    type: gauge
+    unit: "/h"
+    factor: "*3600"
+    gauge_color: green
+    color: "#C0F0C0"
+    max: 25000
+    operator: sum
+  - label: Avg(OK+Error+U)
+    server: ["{{server}}/metrics/meters/test/ok/rate1", "http://no-server:8080/metrics/meters/test/ok/rate1", "{{server}}/metrics/meters/test/error/rate1"]
+    type: gauge
+    unit: "/h"
+    factor: "*3600"
+    gauge_color: green
+    color: "#C0F0C0"
+    max: 25000
+    operator: average
+
 
