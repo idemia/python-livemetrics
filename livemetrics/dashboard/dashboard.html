@@ -178,14 +178,28 @@ td {
     }
 
     s = 0;
+    m = NaN;
+    M = NaN;
     for (val of vals) {
       s += val;
+      if (val>M || isNaN(M)) {
+        M = val;
+      }
+      if (val<m || isNaN(m)) {
+        m = val;
+      }
     }
     if (ope=="average") {
       return s / vals.length;
     }
     if (ope=="sum") {
       return s;
+    }
+    if (ope=="min") {
+      return m;
+    }
+    if (ope=="max") {
+      return M;
     }
     return 0;
   }
@@ -253,8 +267,15 @@ td {
             stats = 0;
           }
 
+          var V = reduce(stats,"{{C.operator|default("sum")}}");
+          V = conv(V,"{{C.factor|default("*1")}}");
+          {% if C.precision is defined %}
+            if(!isNaN(V)) {
+              V = V.toFixed({{C.precision}});
+            }
+          {% endif %}
           const obj_{{C.id}} = document.getElementById("value-{{C.id}}");
-          obj_{{C.id}}.innerHTML = conv(reduce(stats,"{{C.operator|default("sum")}}"),"{{C.factor|default("*1")}}");
+          obj_{{C.id}}.innerHTML = V;
 
         {% elif C.type == 'gauge' %}
 

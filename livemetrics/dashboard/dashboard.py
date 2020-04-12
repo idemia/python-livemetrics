@@ -88,19 +88,22 @@ The cells can be of the following types:
     * - ``value``
       - Display a numeric value as a text
       - - ``label``: A text displayed below the value
-        - ``server``: The full URL used to get the value
+        - ``server``: The full URL used to get the value or a list of URL
         - ``unit``: A small text added after the value
         - ``factor``: A factor to apply to the value. It must start with ``*`` or ``/`` to indicate the operation to execute
+        - ``precision``: the number of digit after the decimal separator in the output. Ex: ``1``, ``2``, etc.
         - ``color``: The text color
+        - ``operator``: in case a list of URL is provided, the operation to perform on the list of values. One of ``sum``, ``average``, ``max`` or ``min``.
     * - ``gauge``
       - Display a numeric value as a gauge and a sparkline showing the recent evolution of the value
       - - ``label``: A text displayed below the value
-        - ``server``: The full URL used to get the value
+        - ``server``: The full URL used to get the value or a list of URL
         - ``unit``: A small text added after the label
         - ``factor``: A factor to apply to the value. It must start with ``*`` or ``/`` to indicate the operation to execute
         - ``color``: The fill color of the sparkline
         - ``gauge_color``: The color of the gauge
         - ``max``: The maximum value of the gauge
+        - ``operator``: in case a list of URL is provided, the operation to perform on the list of values. One of ``sum``, ``average``, ``max`` or ``min``.
     * - ``histogram``
       - Display statistics about a value as a whisker box
       - - ``label``: A text displayed below the value

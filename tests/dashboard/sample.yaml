@@ -12,8 +12,8 @@ rows:
   - label: CPU
     server: "{{server}}/metrics/gauges/cpu/count"
     type: value
-    unit: "%"
-    factor: "*100"
+    unit: "%o"
+    factor: "*1000"
     color: green
   - label: Memory
     server: "{{server}}/metrics/gauges/memory/count"
@@ -56,6 +56,25 @@ rows:
     color: "#C0F0C0"
     max: 25000
     operator: sum
+    precision: 1
+  - label: Min
+    server: ["{{server}}/metrics/meters/test/ok/rate1", "{{server}}/metrics/meters/test/error/rate1"]
+    type: value
+    unit: "/h"
+    factor: "*3600"
+    color: "#C0F0C0"
+    max: 25000
+    operator: min
+    precision: 1
+  - label: Max
+    server: ["{{server}}/metrics/meters/test/ok/rate1", "{{server}}/metrics/meters/test/error/rate1"]
+    type: value
+    unit: "/h"
+    factor: "*3600"
+    color: "#C0F0C0"
+    max: 25000
+    operator: max
+    precision: 2
   - label: Avg(OK+Error+U)
     server: ["{{server}}/metrics/meters/test/ok/rate1", "http://no-server:8080/metrics/meters/test/ok/rate1", "{{server}}/metrics/meters/test/error/rate1"]
     type: gauge
