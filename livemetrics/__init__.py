@@ -172,9 +172,11 @@ __license__ = "CeCILL-C"
 if os.name=='posix':
     def get_memory():
         # Retrieve memory usage from /proc/self/statm
+        # text + data (data+stack)
         try:
             with open('/proc/self/statm','r') as f:
-                return int(f.read().split(' ')[0]) *  os.sysconf('SC_PAGE_SIZE')
+                parts = f.read().split(' ')
+                return (int(parts[3])+int(parts[5])) *  os.sysconf('SC_PAGE_SIZE')
         except:
             return 0
 

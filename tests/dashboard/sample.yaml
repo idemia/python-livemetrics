@@ -11,10 +11,11 @@ rows:
     type: status
   - label: CPU
     server: "{{server}}/metrics/gauges/cpu/count"
-    type: value
-    unit: "%o"
-    factor: "*1000"
-    color: green
+    type: gauge
+    unit: "%"
+    max: 100
+    gauge_color: green
+    color: "#C0F0C0"
   - label: Memory
     server: "{{server}}/metrics/gauges/memory/count"
     type: gauge
@@ -62,7 +63,7 @@ rows:
     type: value
     unit: "/h"
     factor: "*3600"
-    color: "#C0F0C0"
+    color: green
     max: 25000
     operator: min
     precision: 1
@@ -71,7 +72,7 @@ rows:
     type: value
     unit: "/h"
     factor: "*3600"
-    color: "#C0F0C0"
+    color: green
     max: 25000
     operator: max
     precision: 2
