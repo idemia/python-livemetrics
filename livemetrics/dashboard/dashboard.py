@@ -126,6 +126,7 @@ import urllib.request
 import pickle
 import json
 import yaml
+import ssl
 from urllib.parse import urlparse,parse_qs
 
 from jinja2 import Template,Environment,FileSystemLoader,PrefixLoader,ChoiceLoader
@@ -191,7 +192,7 @@ class DashBoardHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 k = 'server[]'
             for server in params[k]:
                 try:
-                    with urllib.request.urlopen(server) as obj:
+                    with urllib.request.urlopen(server, context=ssl.SSLContext()) as obj:
                         val.append( obj.read() )
                         co = obj.getcode()
                         if 'content-type' in obj.info():
