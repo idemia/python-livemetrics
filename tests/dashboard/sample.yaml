@@ -2,9 +2,10 @@
 ---
 title: Sample
 rows:
+{% for idx in range(10) %}
 - label: First Line
   cells:
-  - label: Line 1
+  - label: Line {{idx}}
     type: label
   - label: Health
     server: "{{server}}/is_healthy"
@@ -24,6 +25,10 @@ rows:
     max: 256
     gauge_color: blue
     color: "#C0D0F0"
+  - label: Threads
+    server: "{{server}}/metrics/gauges/num_threads/count"
+    type: value
+    color: blue
   - type: empty
   - label: Time
     server: "{{server}}/metrics/histograms/time"
@@ -85,5 +90,5 @@ rows:
     color: "#C0F0C0"
     max: 25000
     operator: average
-
+{% endfor %}
 

@@ -8,8 +8,7 @@
   <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
         
   <!-- See http://bernii.github.io/gauge.js/ -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gauge.js/1.3.2/gauge.min.js" integrity="sha256-KEsUMeRzEtuzIgL/g8GXg5zolwofZs+J4Lrg2wLn1AE=" crossorigin="anonymous"></script>
-  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gauge.js/1.3.7/gauge.min.js" integrity="sha256-HH1wHY2j4sBftE2MShPBP66TfW18/D3xfq1nmIGbxbI=" crossorigin="anonymous"></script>
   <!-- See http://omnipotent.net/jquery.sparkline -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-sparklines/2.1.2/jquery.sparkline.js" integrity="sha256-LyvLC4QvPtUU7GAeXnI4atDtDDSKOtUFoIRsysvDSDQ=" crossorigin="anonymous"></script>
   
@@ -247,6 +246,7 @@ td {
           ${{C.id}}_gauge.maxValue = {{C.max|default(25000)}};
           ${{C.id}}_gauge.animationSpeed = 20;
 
+          ${{C.id}}_gauge.set(0.0);
         {% elif C.type == 'histogram' %}
         {% endif %}
       }
@@ -281,8 +281,6 @@ td {
 
           var value = conv(reduce(stats,"{{C.operator|default("sum")}}"),"{{C.factor|default("*1")}}");
 
-          ${{C.id}}_gauge.set(Math.min(value,{{C.max|default(25000)}}));
-
           $mpoints_{{C.id}}_gauge.push(value);
           if ($mpoints_{{C.id}}_gauge.length > $mpoints_max) {
             $mpoints_{{C.id}}_gauge.splice(0,1);
@@ -295,6 +293,7 @@ td {
               fillColor: "{{C.color|default('#C0D0F0')}}",
             } );
 
+          ${{C.id}}_gauge.set(Math.min(value,{{C.max|default(25000)}}));
         {% elif C.type == 'histogram' %}
 
           // Provide default values if histograms does not exist yet

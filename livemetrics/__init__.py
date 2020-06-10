@@ -170,6 +170,7 @@ __copyright__ = "IDEMIA"
 __license__ = "CeCILL-C"
 
 if os.name=='posix':
+    # XXX make it 2 values (one with data+stack only)
     def get_memory():
         # Retrieve memory usage from /proc/self/statm
         # text + data (data+stack)
@@ -189,9 +190,7 @@ if os.name=='posix':
         try:
             with open('/proc/self/stat','r') as f:
                 # 14th value is the user time, 16th value is the user time for children
-                # (note: 20th is the number of threads, could be useful)
                 parts = f.read().split(' ')
-                __NB_THREADS = int(parts[20-1])
                 utime = (float(parts[14-1])+float(parts[16-1])) / os.sysconf('SC_CLK_TCK')
                 now = time.time()
                 if __CPU is None:
