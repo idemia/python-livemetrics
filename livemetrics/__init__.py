@@ -164,7 +164,7 @@ import asyncio
 
 from livemetrics.metrics import *
 
-__version__ = '0.6'
+__version__ = '0.7'
 __author__ = "Olivier Heurtier"
 __copyright__ = "IDEMIA"
 __license__ = "CeCILL-C"
