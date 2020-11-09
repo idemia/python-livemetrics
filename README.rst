@@ -18,8 +18,8 @@ livemetrics
     :target: https://pypi.org/project/livemetrics/
     :alt: Python 3.x
 
-.. image:: https://travis-ci.org/idemia/python-livemetrics.svg?branch=master
-    :target: https://travis-ci.org/idemia/python-livemetrics
+.. image:: https://travis-ci.com/idemia/python-livemetrics.svg?branch=master
+    :target: https://travis-ci.com/idemia/python-livemetrics
     :alt: Build Status (Travis CI)
 
 .. image:: https://codecov.io/gh/idemia/python-livemetrics/branch/master/graph/badge.svg
