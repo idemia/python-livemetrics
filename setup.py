@@ -34,6 +34,7 @@ setuptools.setup(
         'dashboard': [
             'jinja2 >=2.10.0',
             'PyYAML >= 5.0.0',
+            'aiohttp >= 3.6',
         ],
     },
     tests_require = [

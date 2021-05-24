@@ -119,9 +119,8 @@ The cells can be of the following types:
 import os
 import logging
 import argparse
+import asyncio
 
-import socketserver
-import http.server
 import urllib.request
 import pickle
 import json
@@ -131,111 +130,82 @@ from urllib.parse import urlparse,parse_qs
 
 from jinja2 import Template,Environment,FileSystemLoader,PrefixLoader,ChoiceLoader
 
+import aiohttp
+from aiohttp import web
+
+routes = web.RouteTableDef()
+
+CONF = None
+
 def server_to_list(value):
     if isinstance(value,list):
         return '["' + '", "'.join(value) + '"]'
     return '"{}"'.format(value)
 
-class DashBoardHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
-    conf = None
+def load_conf(options):
+    global CONF
 
-    def __init__(self, request, client_address, server, options):
-        if DashBoardHTTPRequestHandler.conf is None:
-            DashBoardHTTPRequestHandler.conf = 1
+    myself = {'self':     FileSystemLoader(os.path.dirname(__file__)) }
+    loader = PrefixLoader(myself)
 
-            myself = {'self':     FileSystemLoader(os.path.dirname(__file__)) }
-            loader = PrefixLoader(myself)
+    env = Environment(loader=ChoiceLoader([FileSystemLoader([".",'/']), loader]))
+    env.filters.update({'server_to_list': server_to_list})
+    template = env.get_template(options.input.name)
+    buf = template.render()
 
-            env = Environment(loader=ChoiceLoader([FileSystemLoader([".",'/']), loader]))
-            env.filters.update({'server_to_list': server_to_list})
-            template = env.get_template(options.input.name)
-            buf = template.render()
+    CONF = yaml.load(buf,Loader=yaml.Loader)
 
-            DashBoardHTTPRequestHandler.conf = yaml.load(buf,Loader=yaml.Loader)
+    # generate ids
+    i = 1
+    for r in CONF['rows']:
+        for c in r['cells']:
+            c['id'] = str("id%d"%i)
+            i += 1
+    logging.debug("CONF: " + str(CONF))
 
-            # generate ids
-            i = 1
-            for r in DashBoardHTTPRequestHandler.conf['rows']:
-                for c in r['cells']:
-                    c['id'] = str("id%d"%i)
-                    i += 1
+@routes.get('/')
+async def home_page(request):
+    global CONF
+    myself = {'self':     FileSystemLoader(os.path.dirname(__file__)) }
+    loader = PrefixLoader(myself)
+    env = Environment(loader=loader)
+    env.filters.update({'server_to_list': server_to_list})
 
-        super().__init__(request, client_address, server)
+    template = env.get_template('self/dashboard.html')
+    buf = template.render(config=CONF)
+    # logging.debug(buf)
+    return web.Response(status=200, text=buf, content_type='text/html')
 
-    def end_headers(self):
-        self.send_header("Access-Control-Allow-Origin","*")
-        return http.server.SimpleHTTPRequestHandler.end_headers(self)
+@routes.get('/all')
+async def all(request):
+    q = request.query
+    logging.debug("Query: %s", q)
+    val = []
+    co = None
+    ct = None
+    for server in [q.getone('server','')]+q.getall('server[]',[]):
+        if not server: continue
+        try:
+            logging.debug(server)
+            async with aiohttp.ClientSession() as session:
+                async with session.get(server, ssl=False) as response:
+                    val.append(await response.text())
+                    co = response.status
+                    if 'content-type' in response.headers:
+                        ct = response.content_type
+        except Exception as exc:
+            logging.debug(str(exc))
+            val.append(None)
 
-    def do_GET(self):
-        if self.path=='/':
-            myself = {'self':     FileSystemLoader(os.path.dirname(__file__)) }
-            loader = PrefixLoader(myself)
-            env = Environment(loader=loader)
-            env.filters.update({'server_to_list': server_to_list})
+    logging.debug(val)
+    if len(val)==1:
+        if val[0] is None:
+            return web.Response(status=500, text='')
+        return web.Response(status=co, text=val[0], content_type=ct)
 
-            template = env.get_template('self/dashboard.html')
-            buf = template.render(config=self.conf)
-            self.send_response(200)
-            self.send_header("Content-Type","text/html ; encoding=UTF-8")
-            self.send_header("Content-Length", str(len(buf)))
-            self.end_headers()
-            self.wfile.write(buf.encode('utf-8'))
-            return
-        elif self.path.startswith('/all'):
-            pr = urlparse(self.path)
-            params = parse_qs(pr.query)
-            val = []
-            co = None
-            ct = None
-            k = 'server'
-            if 'server[]' in params:
-                k = 'server[]'
-            for server in params[k]:
-                try:
-                    with urllib.request.urlopen(server, context=ssl.SSLContext()) as obj:
-                        val.append( obj.read() )
-                        co = obj.getcode()
-                        if 'content-type' in obj.info():
-                            ct = obj.info()['content-type']
-                except:
-                    val.append(None)
-            if len(val)==1 and val[0] is None:
-                self.send_response(500)
-                self.end_headers()
-                return
-            elif len(val)==1:
-                self.send_response(co)
-                if ct:
-                    self.send_header("Content-Type",obj.info()['content-type'])
-                self.send_header("Content-Length", str(len(val[0])))
-                self.end_headers()
-                self.wfile.write(val[0])
-                return
-            else:  # value of values to return
-                # Only json is supported
-                buf = json.dumps([v and json.loads(v) for v in val]).encode('latin-1')
-                self.send_response(200)
-                self.send_header("Content-Type","application/json")
-                self.send_header("Content-Length", str(len(buf)))
-                self.end_headers()
-                self.wfile.write(buf)
-                return
-        return super().do_GET()
-
-    def log_message(self, format, *args):
-        # override to include in the standard log file and to apply filtering
-        logging.debug("%s - - [%s] %s" %
-                         (self.client_address[0],
-                          self.log_date_time_string(),
-                          format%args))
-
-class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
-    """Handle requests in a separate thread."""
-
-def serve(options):
-    server_address = (options.ip, options.port)
-    httpd = http.server.HTTPServer(server_address, lambda r,a,s:  DashBoardHTTPRequestHandler(r,a,s,options))
-    httpd.serve_forever()
+    # array of values to return
+    # Only json is supported
+    return web.json_response(status=200, data=[v and json.loads(v) for v in val])
 
 #______________________________________________________________________________
 def main(args=None):
@@ -259,8 +229,11 @@ def main(args=None):
         logging.getLogger().addHandler(fh)
 
     logging.debug(options)
+    load_conf(options)
 
-    serve(options)
+    app = web.Application()
+    app.add_routes(routes)
+    web.run_app(app,host=options.ip, port=options.port, access_log=None)
 
 if __name__=='__main__':
     main()
