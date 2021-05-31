@@ -207,6 +207,11 @@ async def all(request):
     # Only json is supported
     return web.json_response(status=200, data=[v and json.loads(v) for v in val])
 
+def get_app():
+    app = web.Application()
+    app.add_routes(routes)
+    return app
+
 #______________________________________________________________________________
 def main(args=None):
 
@@ -231,8 +236,7 @@ def main(args=None):
     logging.debug(options)
     load_conf(options)
 
-    app = web.Application()
-    app.add_routes(routes)
+    app = get_app()
     web.run_app(app,host=options.ip, port=options.port, access_log=None)
 
 if __name__=='__main__':
