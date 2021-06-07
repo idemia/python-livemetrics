@@ -4,9 +4,12 @@
   <title>Dashboard</title>
   <meta name="description" content="Dashboard">
 
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-  <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
-        
+  <!-- https://getbootstrap.com/docs/versions/ -->
+<!--  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+-->
+    <!-- https://code.jquery.com/ -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
   <!-- See http://bernii.github.io/gauge.js/ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gauge.js/1.3.7/gauge.min.js" integrity="sha256-HH1wHY2j4sBftE2MShPBP66TfW18/D3xfq1nmIGbxbI=" crossorigin="anonymous"></script>
   <!-- See http://omnipotent.net/jquery.sparkline -->
@@ -17,7 +20,14 @@
   <script src="https://unpkg.com/chartjs-chart-box-and-violin-plot@2/build/Chart.BoxPlot.js"></script>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.css">
-</head>
+
+  <!-- https://apexcharts.com/ -->
+  <link
+  rel="stylesheet"
+  href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+/>
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 <body>
   <style>
@@ -151,8 +161,8 @@ td {
         {% if C.type == 'label' %}
         {% elif C.type =='empty' %}
         {% else %}
+//        update_{{C.id}}(10,true);
           $.get("all", {server: {{C.server|server_to_list}} }, function(stats,status) {
-          //$.get("all", {server: ["abc", "cd"]}, function(stats,status) {
             update_{{C.id}}(stats,status);
           }).fail(function() {
             update_{{C.id}}(null,false);
@@ -213,7 +223,8 @@ td {
       {% elif C.type == 'gauge' %}
 
         var ${{C.id}}_gauge = null;
-        var $mpoints_{{C.id}}_gauge = [];
+        var ${{C.id}}_line_gauge = null;
+        var $mpoints_{{C.id}}_gauge = [null,null,null,null,null];
 
       {% elif C.type == 'histogram' %}
       {% endif %}
@@ -224,29 +235,96 @@ td {
         {% elif C.type == 'value' %}
         {% elif C.type == 'gauge' %}
 
-          var opts = {
-            angle: 0.0,
-            lineWidth: 0.25,
-            radiusScale: 0.7,
-            pointer: {
-              length: 0.51, // // Relative to gauge radius
-              strokeWidth: 0.05, // The thickness
-              color: '#000000' // Fill color
+          var options = {
+            series: [{
+              name: "{{C.label}}",
+              data: $mpoints_{{C.id}}_gauge
+            }],
+            chart: {
+              type: 'area',
+              width: $mpoints_max*2,
+              height: 40,
+              sparkline: {
+                enabled: true
+              },
+              animations: {
+                enabled: false
+              }
             },
-            limitMax: false,
-            limitMin: false,
-            strokeColor: '#E0E0E0',
-            colorStop: '{{C.gauge_color|default("blue")}}'
+            stroke: {
+              curve: 'smooth',
+              width: 2
+            },
+            fill: {
+              opacity: 0.3,
+              type: 'solid'
+            },
+            yaxis: {
+              show: false,
+              min: 0
+              // max: {{C.max}}
+            },
+            colors: ["{{C.color|default('#C0D0F0')}}"]
           };
 
-          ${{C.id}}_gauge = new Gauge(document.getElementById("canvas-{{C.id}}-gauge"));
-          ${{C.id}}_gauge.setOptions(opts);
-          ${{C.id}}_gauge.setTextField(document.getElementById("text-{{C.id}}-gauge"));
-          ${{C.id}}_gauge.setMinValue(0);
-          ${{C.id}}_gauge.maxValue = {{C.max|default(25000)}};
-          ${{C.id}}_gauge.animationSpeed = 20;
 
-          ${{C.id}}_gauge.set(0.0);
+          ${{C.id}}_line_gauge = new ApexCharts(document.querySelector("#line-{{C.id}}-gauge"), options);
+          ${{C.id}}_line_gauge.render();
+
+          // The gauge it self
+          var options = {
+            series: [67],
+            chart: {
+              height: 170,
+              type: 'radialBar',
+              offsetY: 0,
+              animations: {
+                enabled: false
+              }
+            },
+            plotOptions: {
+              radialBar: {
+                startAngle: -115,
+                endAngle: 115,
+                dataLabels: {
+                  name: {
+                    fontSize: '16px',
+                    color: 'black',
+                    offsetY: 40
+                  },
+                  value: {
+                    offsetY: -15,
+                    fontSize: '12px',
+                    color: 'black',
+                    formatter: function (val) {
+                      return (val/100*{{C.max|default(25000)}}).toFixed(0);
+                    }
+                  }
+                }
+              }
+            },
+            fill: {
+              type: 'gradient',
+              gradient: {
+                shade: 'dark',
+                shadeIntensity: 0.15,
+                inverseColors: false,
+                opacityFrom: 1,
+                opacityTo: 1,
+                colorStops: [ [ {
+                    offset: 0,
+                    color: '{{C.gauge_color|default("blue")}}',
+                    opacity: 1
+                    },
+                  ]
+                ],
+              },
+            },
+            labels: ['{{label|truncate(10)}}'],  
+          };
+
+          ${{C.id}}_gauge = new ApexCharts(document.querySelector("#canvas-{{C.id}}-gauge"), options);
+          ${{C.id}}_gauge.render();
         {% elif C.type == 'histogram' %}
         {% endif %}
       }
@@ -261,7 +339,6 @@ td {
             obj.className = "far fa-thumbs-down status_ko";
           }
         {% elif C.type == 'value' %}
-
           // Provide default values if metric does not exist yet
           if (stats==null) {
             stats = 0;
@@ -276,7 +353,6 @@ td {
           {% endif %}
           const obj_{{C.id}} = document.getElementById("value-{{C.id}}");
           obj_{{C.id}}.innerHTML = V;
-
         {% elif C.type == 'gauge' %}
 
           var value = conv(reduce(stats,"{{C.operator|default("sum")}}"),"{{C.factor|default("*1")}}");
@@ -285,17 +361,13 @@ td {
           if ($mpoints_{{C.id}}_gauge.length > $mpoints_max) {
             $mpoints_{{C.id}}_gauge.splice(0,1);
           }
-          $('#line-{{C.id}}-gauge').sparkline($mpoints_{{C.id}}_gauge, { 
-              type:"line", 
-              chartRangeMin: 0, 
-              height: 40, 
-              width: $mpoints_{{C.id}}_gauge.length*2,
-              fillColor: "{{C.color|default('#C0D0F0')}}",
-            } );
 
-          ${{C.id}}_gauge.set(Math.min(value,{{C.max|default(25000)}}));
+          ${{C.id}}_line_gauge.updateSeries([{
+              data: $mpoints_{{C.id}}_gauge
+            }]);
+
+          ${{C.id}}_gauge.updateSeries([Math.min(value*100/{{C.max|default(25000)}}, 100)]);
         {% elif C.type == 'histogram' %}
-
           // Provide default values if histograms does not exist yet
           if (stats==null) {
             stats = {"quantiles": {"0.05": 0.0, "0.25": 0.0, "0.75": 0.0, "0.95": 0.0, "0.5": 0.0}};
@@ -340,7 +412,6 @@ td {
               }
             }
           });
-
         {% endif %}
       }
     {% endfor %}
@@ -413,17 +484,8 @@ td {
         {% elif C.type == 'gauge' %}
 
           <span style="display: inline-block;">
-            <div class="thumbnail">
-              <canvas width=100 height=80 id="canvas-{{C.id}}-gauge" class="center-block gauge-canvas"></canvas>
-              <div id="text-{{C.id}}-gauge" class="gauge-text"></div>
-            </div>
-            <div class="thumbnail gauge-sparkline">
-              <span id="line-{{C.id}}-gauge">Loading..</span>
-            </div>
-            <div>
-              {% set label = C.label ~ " (" ~ C.unit ~ ")" %}
-              <h4 title="{{C.label}} ({{C.unit}})">{{label|truncate(10)}}</h4>
-            </div>
+            <div id="canvas-{{C.id}}-gauge"></div>
+            <dic id="line-{{C.id}}-gauge">Loading..</div>
           </span>
       
         {% elif C.type == 'histogram' %}
