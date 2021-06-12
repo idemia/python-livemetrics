@@ -1,19 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Dashboard</title>
-  <meta name="description" content="Dashboard">
+  <title>Dashboard {{config.title}}</title>
+  <meta name="description" content="Dashboard {{config.title}}">
 
   <!-- https://code.jquery.com/ -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"/>
 
   <!-- https://apexcharts.com/ -->
-  <link
-  rel="stylesheet"
-  href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"/>
-
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 <body>
@@ -46,12 +43,13 @@
 
 td h4 {
   text-align: center;
+  font-size: 110%;
 }
 
 /* For simple values */
 .value-value {
   font-family: sans-serif;
-  font-size: 130%;
+  font-size: 110%;
   font-weight: bold;
 }
 
@@ -130,7 +128,7 @@ td {
   
   $( function(){
 
-    // TODO adjust frequency on the number of charts in the dashboard
+    // TODO adjust frequency based on the number of charts in the dashboard
     setInterval(refresh_values,5000);
 
     {% for R in config.rows %}
@@ -219,72 +217,48 @@ td {
       {% endif %}
 
       /* Init function */
+      // TODO Test with animations
       function init_{{C.id}}() {
         {% if C.type == 'status' %}
         {% elif C.type == 'value' %}
         {% elif C.type == 'gauge' %}
-          // TODO: Move label in a text area below the sparkline
-          var options = {
-            series: [{
-              name: "{{C.label}}",
-              data: $mpoints_{{C.id}}_gauge
-            }],
-            chart: {
-              type: 'area',
-              width: $mpoints_max*2,
-              height: 40,
-              sparkline: {
-                enabled: true
-              },
-              animations: {
-                enabled: false
-              }
-            },
-            stroke: {
-              curve: 'smooth',
-              width: 2
-            },
-            fill: {
-              opacity: 0.3,
-              type: 'solid'
-            },
-            yaxis: {
-              show: false,
-              min: 0
-              // max: {{C.max}}
-            },
-            colors: ["{{C.color|default('#C0D0F0')}}"]
-          };
-
-
-          ${{C.id}}_line_gauge = new ApexCharts(document.querySelector("#line-{{C.id}}-gauge"), options);
-          ${{C.id}}_line_gauge.render();
-
-          // The gauge it self
-          {% set label = C.label ~ " (" ~ C.unit ~ ")" %}
           var options = {
             series: [67],
             chart: {
-              height: 170,
+              height: 140,
               type: 'radialBar',
               offsetY: 0,
               animations: {
                 enabled: false
               }
             },
+            grid: {
+              show: false,
+              padding: {
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: -23
+              }
+            },
+            yaxis: {
+              show: false
+            },
             plotOptions: {
               radialBar: {
                 startAngle: -125,
                 endAngle: 125,
+                offsetY: -20,
+                hollow: {
+                  size: '40',
+                },
                 dataLabels: {
                   name: {
-                    fontSize: '16px',
-                    color: 'black',
-                    offsetY: 50
+                    show: false,
                   },
                   value: {
-                    offsetY: -15,
-                    fontSize: '12px',
+                    offsetY: 0,
+                    fontSize: '14px',
                     color: 'black',
                     formatter: function (val) {
                       return (val/100*{{C.max|default(25000)}}).toFixed(0);
@@ -310,11 +284,60 @@ td {
                 ],
               },
             },
-            labels: ['{{label|truncate(10)}}'],  
           };
 
           ${{C.id}}_gauge = new ApexCharts(document.querySelector("#canvas-{{C.id}}-gauge"), options);
           ${{C.id}}_gauge.render();
+
+          // The sparkline below the gauge
+          var options = {
+            series: [{
+              name: "{{C.label}}",
+              data: $mpoints_{{C.id}}_gauge
+            }],
+            chart: {
+              type: 'area',
+              width: $mpoints_max*2,
+              height: 35,
+              offsetY: 0, // -50, //-90,
+              sparkline: {
+                enabled: true
+              },
+              animations: {
+                enabled: false
+              }
+            },
+            grid: {
+              padding: {
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0
+              }
+            },
+            stroke: {
+              curve: 'smooth',
+              width: 2
+            },
+            fill: {
+              opacity: 0.3,
+              type: 'solid'
+            },
+            yaxis: {
+              show: false,
+              min: 0
+              // max: 25000
+            },
+            xaxis: {
+              show: false,
+            },
+            colors: ["{{C.color|default('#C0D0F0')}}"],
+          };
+
+
+          ${{C.id}}_line_gauge = new ApexCharts(document.querySelector("#line-{{C.id}}-gauge"), options);
+          ${{C.id}}_line_gauge.render();
+
         {% elif C.type == 'histogram' %}
 
           var options = {
@@ -331,8 +354,8 @@ td {
             ],
             chart: {
               type: 'boxPlot',
-              height: 143,
-              width: 110,
+              height: 105,  // TODO: remove empty vertical space
+              width: 100,
               animations: {
                 enabled: false
               },
@@ -357,9 +380,32 @@ td {
                 style: {
                   fontSize: "6pt"
                 }
+              },
+              labels: {
+                offsetX: -10,
+              },
+              tooltip: {
+                  enabled: false,
+              },
+            },
+            xaxis: {
+              show: false,
+              tooltip: {
+                  enabled: false,
+              },
+              title: {
+                show:false
               }
             },
             legend: {show: false},
+            grid: {
+              padding: {
+              left: -10,
+              right: 2,
+              top: -10,
+              bottom: -20
+              }
+            }            
           };
 
           ${{C.id}}_histo = new ApexCharts(document.querySelector("#chart-{{C.id}}-histo"), options);
@@ -394,7 +440,7 @@ td {
           obj_{{C.id}}.innerHTML = V;
         {% elif C.type == 'gauge' %}
 
-          var value = conv(reduce(stats,"{{C.operator|default("sum")}}"),"{{C.factor|default("*1")}}");
+          var value = conv(reduce(stats,"{{C.operator|default("sum")}}"),"{{C.factor|default("*1")}}").toFixed(0);
 
           $mpoints_{{C.id}}_gauge.push(value);
           if ($mpoints_{{C.id}}_gauge.length > $mpoints_max) {
@@ -419,11 +465,11 @@ td {
                 {
                   x: '',
                   y: [
-                    conv(stats.quantiles[0.05],"{{C.factor|default("*1")}}"),
-                    conv(stats.quantiles[0.25],"{{C.factor|default("*1")}}"),
-                    conv(stats.quantiles[0.5],"{{C.factor|default("*1")}}"),
-                    conv(stats.quantiles[0.75],"{{C.factor|default("*1")}}"),
-                    conv(stats.quantiles[0.95],"{{C.factor|default("*1")}}")
+                    conv(stats.quantiles[0.05],"{{C.factor|default("*1")}}").toFixed(0),
+                    conv(stats.quantiles[0.25],"{{C.factor|default("*1")}}").toFixed(0),
+                    conv(stats.quantiles[0.5],"{{C.factor|default("*1")}}").toFixed(0),
+                    conv(stats.quantiles[0.75],"{{C.factor|default("*1")}}").toFixed(0),
+                    conv(stats.quantiles[0.95],"{{C.factor|default("*1")}}").toFixed(0)
                   ]
                 }
                 ]
@@ -447,73 +493,58 @@ td {
 
     {% for C in R.cells %}
       <td>
+        <span style="display: inline-block;">
+
           {% if C.type == 'empty' %}
 
-            <span style="display: inline-block;">
-              <div class="centered">
-                  <div style="height: 143px; width: 100px;">
-                      <span class="row-label">&nbsp;</span>
-                  </div>
-              </div>
-              <div>
-                  <h4>&nbsp;</h4>
-              </div>
-            </span>
+          <div class="thumbnail centered">
+            <div style="height: 120px; width: 100px;">
+              <span class="row-label">&nbsp;</span>
+            </div>
+            <h4>&nbsp;</h4>
+          </div>
   
           {% elif C.type == 'label' %}
 
-          <span style="display: inline-block;">
-            <div class="centered">
-                <div style="height: 143px; width: 100px;">
-                    <span class="row-label">{{C.label}}</span>
-                </div>
+          <div class="thumbnail centered">
+            <div style="height: 120px; width: 100px;">
+              <span class="row-label">{{C.label}}</span>
             </div>
-            <div>
-                <h4>&nbsp;</h4>
-            </div>
-          </span>
+            <h4>&nbsp;</h4>
+          </div>
 
         {% elif C.type == 'status' %}
 
-          <span style="display: inline-block;">
-            <div class="thumbnail centered">
-                <div style="height: 143px; width: 100px;">
-                    <i id="status-{{C.id}}" class="far fa-thumbs-down status_ko"></i>
-                </div>
+        <div class="thumbnail centered">
+          <div style="height: 120px; width: 100px;">
+            <i id="status-{{C.id}}" class="far fa-thumbs-down status_ko"></i>
             </div>
-            <div>
-                <h4 title="{{C.label}}">{{C.label|truncate(10)}}</h4>
-            </div>
-          </span>
+          <h4 title="{{C.label}}">{{C.label|truncate(10, True, "+", 0)}}</h4>
+        </div>
 
         {% elif C.type == 'value' %}
 
-          <span style="display: inline-block;">
-            <div class="thumbnail centered">
-              <div class="value-value" style="height: 143px; width: 100px;">
+            <div class="thumbnail centered" >
+              <div class="value-value" style="height: 120px; width: 100px;">
                 <span id="value-{{C.id}}" style="color: {{C.color}}"></span><span style="color: {{C.color}}">&nbsp;{{C.unit}}</span>
               </div>
+              <h4 title="{{C.label}}">{{C.label|truncate(10, True, "+", 0)}}</h4>
             </div>
-            <div>
-                <h4 title="{{C.label}}">{{C.label|truncate(10)}}</h4>
-            </div>
-          </span>
         
         {% elif C.type == 'gauge' %}
 
-          <span style="display: inline-block;">
-            <div id="canvas-{{C.id}}-gauge">Loading...</div>
-            <div id="line-{{C.id}}-gauge">Loading..</div>
-          </span>
+            <div class="thumbnail">
+              <div id="canvas-{{C.id}}-gauge">Loading...</div>
+              <div id="line-{{C.id}}-gauge">Loading..</div>
+              <h4 title="{{C.label}}">{{C.label|truncate(10, True, "+", 0)}}</h4>
+            </div>
       
         {% elif C.type == 'histogram' %}
 
-          <span style="display: inline-block;">
-            <div id="chart-{{C.id}}-histo"></div>
-            <div>
-                <h4 title="{{C.label}}">{{C.label|truncate(10)}}</h4>
+            <div class="thumbnail">
+              <div id="chart-{{C.id}}-histo" style="min-height: 120px; width: 100px;"></div>
+              <h4 title="{{C.label}}">{{C.label|truncate(10, True, "+", 0)}}</h4>
             </div>
-          </span>
 
         {% endif %}
 
