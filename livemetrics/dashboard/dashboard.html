@@ -128,8 +128,8 @@ td {
   
   $( function(){
 
-    // TODO adjust frequency based on the number of charts in the dashboard
-    setInterval(refresh_values,5000);
+    // adjust frequency based on the number of charts in the dashboard
+    setInterval(refresh_values,{{timeout}});
 
     {% for R in config.rows %}
       {% for C in R.cells %}
@@ -217,7 +217,6 @@ td {
       {% endif %}
 
       /* Init function */
-      // TODO Test with animations
       function init_{{C.id}}() {
         {% if C.type == 'status' %}
         {% elif C.type == 'value' %}
@@ -441,7 +440,6 @@ td {
         {% elif C.type == 'gauge' %}
 
           var value = conv(reduce(stats,"{{C.operator|default("sum")}}"),"{{C.factor|default("*1")}}").toFixed(0);
-
           $mpoints_{{C.id}}_gauge.push(value);
           if ($mpoints_{{C.id}}_gauge.length > $mpoints_max) {
             $mpoints_{{C.id}}_gauge.splice(0,1);

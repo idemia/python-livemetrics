@@ -36,7 +36,7 @@ rows:
     unit: ms
     factor: "*1000"
     color: "#ff000080"
-    median_color: green
+    median_color: "#00ff0080"
   - label: Test OK
     server: "{{server}}/metrics/meters/test/ok/rate1"
     type: gauge
