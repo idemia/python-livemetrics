@@ -158,6 +158,8 @@ def load_conf(options):
     # generate ids
     i = 1
     for r in CONF['rows']:
+        r['id'] = str("id%d"%i)
+        i += 1
         for c in r['cells']:
             c['id'] = str("id%d"%i)
             i += 1

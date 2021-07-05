@@ -78,15 +78,20 @@ td {
       {% endfor %}
     {% endfor %}
 
-    refresh_values();
+    {% for R in config.rows %}
+    refresh_values_{{R.id}}();
+    {% endfor %}
+
     // adjust frequency based on the number of charts in the dashboard
-    setInterval(refresh_values,{{timeout}});
+    {% for R in config.rows %}
+    setInterval(refresh_values_{{R.id}},{{timeout}});
+    {% endfor %}
 
   });
   
   var $mpoints_max = 50;
-  function refresh_values() {
-    {% for R in config.rows %}
+  {% for R in config.rows %}
+  function refresh_values_{{R.id}}() {
       {% for C in R.cells %}
         {% if C.type == 'label' %}
         {% elif C.type =='empty' %}
@@ -98,8 +103,8 @@ td {
           });
         {% endif %}
       {% endfor %}
-    {% endfor %}
   }
+  {% endfor %}
 
   function conv(val,factor) {
     if (factor.slice(0,1)=='*') {
@@ -181,7 +186,7 @@ td {
               left: 0,
               right: 0,
               top: 0,
-              bottom: -23
+              bottom: -10
               }
             },
             plotOptions: {
@@ -280,7 +285,6 @@ td {
             yaxis: {
               show: false,
               min: 0
-              // max: 25000
             },
             xaxis: {
               show: false,
