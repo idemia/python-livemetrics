@@ -175,10 +175,11 @@ async def home_page(request):
 
     template = env.get_template('self/dashboard.html')
     nb = 0
-    for r in CONF['rows']:
-        for c in r['cells']:
-            if c['type'] in ['gauge','histogram']:
-                nb += 1
+    if CONF:
+      for r in CONF['rows']:
+          for c in r['cells']:
+              if c['type'] in ['gauge','histogram']:
+                  nb += 1
     timeout = max(4000, min(10000,300*nb))
     buf = template.render(config=CONF, timeout=timeout)
     # logging.debug(buf)
