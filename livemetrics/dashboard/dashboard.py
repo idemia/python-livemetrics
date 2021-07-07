@@ -196,7 +196,7 @@ async def all(request):
         try:
             logging.debug(server)
             async with aiohttp.ClientSession() as session:
-                async with session.get(server, ssl=False) as response:
+                async with session.get(server, timeout=2, ssl=False) as response:
                     val.append(await response.text())
                     co = response.status
                     if 'content-type' in response.headers:
