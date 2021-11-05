@@ -16,7 +16,10 @@ import livemetrics.publishers.aiohttp
 
 import tests.publishers
 
-LM = livemetrics.LiveMetrics('{"version":"1.0"}',"Test server",True, True)
+async def is_healthy():
+    return True
+
+LM = livemetrics.LiveMetrics('{"version":"1.0"}',"Test server",is_healthy, True)
 
 # Sample of gauges
 LM.gauge('fixed',10)

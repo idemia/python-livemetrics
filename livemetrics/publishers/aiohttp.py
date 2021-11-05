@@ -30,7 +30,7 @@ A minimal application would be:
 
 import json
 
-import aiohttp
+import asyncio
 from aiohttp import web
 
 class Handler:
@@ -45,6 +45,8 @@ class Handler:
 
     async def is_healthy(self,request):
         status = self.LM.is_healthy()
+        if asyncio.iscoroutine(status):
+            status = await status
         if status:
             return web.Response(status=200,
                 headers={"Access-Control-Allow-Origin": "*"},
@@ -56,6 +58,8 @@ class Handler:
 
     async def is_ready(self,request):
         status = self.LM.is_ready()
+        if asyncio.iscoroutine(status):
+            status = await status
         if status:
             return web.Response(status=200,
                 headers={"Access-Control-Allow-Origin": "*"},
