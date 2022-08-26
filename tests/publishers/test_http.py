@@ -63,6 +63,8 @@ class TestHTTPRequestHandler(livemetrics.publishers.http.HTTPRequestHandler):
     def log_message(self, format, *args):
         pass
         
+TestHTTPRequestHandler.__test__ = False
+
 def _serve():
     global LM
     tests.publishers.PORT = '8765'

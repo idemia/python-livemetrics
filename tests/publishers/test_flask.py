@@ -73,7 +73,7 @@ def _serve():
 class TestFlask(tests.publishers.TestPublisher):
     
     def setUp(self):
-        self.t = threading.Thread(target=_serve , daemon=False)
+        self.t = threading.Thread(target=_serve , daemon=True)
         self.t.start()
         time.sleep(0.2)
         self.LM = LM

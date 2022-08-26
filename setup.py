@@ -26,7 +26,7 @@ setuptools.setup(
             'aiohttp >= 3.6',
         ],
         'django': [
-            'django >= 3.2.12, !=4.0, !=4.0.1',
+            'django >= 3.2.15, !=4.0, !=4.0.1',
         ],
         'flask': [
             'flask >= 1.0.0',
@@ -54,6 +54,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "License :: CeCILL-C Free Software License Agreement (CECILL-C)",
         "Operating System :: OS Independent",
     ],
