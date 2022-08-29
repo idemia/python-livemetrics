@@ -95,6 +95,7 @@ class TestPublisher(unittest.TestCase):
 
         backup_ir = self.LM.is_ready
         self.LM.is_ready = lambda: False
+        requests.get('http://'+IP+':'+PORT+'/switch')
 
         with requests.get('http://'+IP+':'+PORT+'/monitoring/v1/is_healthy') as r:
             self.assertEqual(500,r.status_code)
@@ -103,6 +104,7 @@ class TestPublisher(unittest.TestCase):
 
         self.LM.is_healthy = backup_ih
         self.LM.is_ready = backup_ir
+        requests.get('http://'+IP+':'+PORT+'/switch')
 
         # Test memory & CPU
         if not os.name=='posix':
@@ -121,3 +123,4 @@ class TestPublisher(unittest.TestCase):
             self.assertEqual(cpu,r.json())
         time.sleep(0.5)
         requests.get('http://'+IP+':'+PORT+'/monitoring/v1/metrics/gauges/cpu/count')
+

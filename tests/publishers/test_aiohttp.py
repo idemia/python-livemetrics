@@ -82,9 +82,9 @@ def run_server(handler):
 class TestAioHttp(tests.publishers.TestPublisher):
     
     def setUp(self):
-        self.t = threading.Thread(target=run_server,args=(runner(),) , daemon=False)
+        self.t = threading.Thread(target=run_server,args=(runner(),) , daemon=True)
         self.t.start()
-        time.sleep(0.2)
+        time.sleep(1.0)
         self.LM = LM
 
     def tearDown(self):

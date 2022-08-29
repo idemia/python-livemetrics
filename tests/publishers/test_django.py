@@ -48,8 +48,20 @@ def myview(request):
         raise Exception("false-alert")
     return HttpResponse("OK")
 
+def switchview(request):
+    global LM
+    if LM.is_healthy():
+        LM.is_healthy = lambda: False
+    else:
+        LM.is_healthy = lambda: True
+    if LM.is_ready():
+        LM.is_ready = lambda: False
+    else:
+        LM.is_ready = lambda: True
+
 urlpatterns = [
     path('test', myview, name='test'),
+    path('switch', switchview, name='switch'),
 ]
 
 urlpatterns += livemetrics.publishers.django.urlpatterns(LM)
@@ -92,7 +104,7 @@ class TestDjango(tests.publishers.TestPublisher):
         global LM
         self.t = threading.Thread(target=_serve , daemon=True)
         self.t.start()
-        time.sleep(0.2)
+        time.sleep(1.0)
         self.LM = LM
 
 # ______________________________________________________________________________

@@ -75,7 +75,7 @@ class TestFlask(tests.publishers.TestPublisher):
     def setUp(self):
         self.t = threading.Thread(target=_serve , daemon=True)
         self.t.start()
-        time.sleep(0.2)
+        time.sleep(1.0)
         self.LM = LM
 
     def tearDown(self):

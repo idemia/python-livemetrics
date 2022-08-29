@@ -38,13 +38,13 @@ from . import client
 class TestDashboard(unittest.TestCase):
     
     def setUp(self):
-        self.t = threading.Thread(target=run_server,args=(runner(),) , daemon=False)
+        self.t = threading.Thread(target=run_server,args=(runner(),) , daemon=True)
         self.t.start()
-        time.sleep(0.2)
+        time.sleep(1.0)
 
         t = threading.Thread(target=server._serve, daemon=True)
         t.start()
-        time.sleep(0.2)
+        time.sleep(1.0)
 
         t = threading.Thread(target=client.inject, daemon=True)
         t.start()
