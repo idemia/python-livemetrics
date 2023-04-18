@@ -26,7 +26,7 @@ setuptools.setup(
             'aiohttp >= 3.6',
         ],
         'django': [
-            'django >= 3.2.16, !=4.0, !=4.0.1',
+            'django >= 3.2.18, !=4.0, !=4.0.1',
         ],
         'flask': [
             'flask >= 1.0.0',
