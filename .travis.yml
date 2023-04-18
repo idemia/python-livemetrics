@@ -8,28 +8,28 @@ branches:
 
 matrix:
   include:
+    - python: 3.11
+      env: TOXENV=py311-django40,docs
+    - python: 3.11
+      env: TOXENV=py311-django42,docs
     - python: 3.10
-      env: TOXENV=py310-django41,docs
+      env: TOXENV=py310-django42,docs
     - python: 3.10
       env: TOXENV=py310-django40
     - python: 3.10
       env: TOXENV=py310-django32
     - python: 3.9
-      env: TOXENV=py39-django41
+      env: TOXENV=py39-django42
     - python: 3.9
       env: TOXENV=py39-django40
     - python: 3.9
       env: TOXENV=py39-django32
     - python: 3.8
-      env: TOXENV=py38-django41
+      env: TOXENV=py38-django42
     - python: 3.8
       env: TOXENV=py38-django40
     - python: 3.8
       env: TOXENV=py38-django32
-    - python: 3.7
-      env: TOXENV=py37-django32
-    - python: 3.6
-      env: TOXENV=py36-django32
 
 install:
   - ./.travis/install
