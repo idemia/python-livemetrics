@@ -25,6 +25,15 @@ jobs:
         python -m pip install tox
         python -m tox -e py-django32,py-django41,py-django42  
 
+    - uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        # files: ./coverage1.xml,./coverage2.xml # optional
+        flags: unittests # optional
+        name: codecov-umbrella # optional
+        fail_ci_if_error: true # optional (default = false)
+        verbose: true # optional (default = false)
+    
   docs:
     runs-on: ubuntu-latest
     steps:
