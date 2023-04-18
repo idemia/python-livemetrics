@@ -40,7 +40,7 @@ setuptools.setup(
     tests_require = [
         'requests',
         'aiohttp >= 3.6',
-        'django == 3.2.16',
+        'django == 3.2.18',
         'flask >= 1.0.0',
         'jinja2 >=2.10.0',
         'PyYAML >= 5.0.0',
