@@ -10,7 +10,6 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         python-version: [3.8, 3.9, '3.10', '3.11']
-        django-version: [3.2, 4.1, 4.2]
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -24,7 +23,7 @@ jobs:
     - name: Run pytest
       run: |
         python -m pip install tox
-        python -m tox -e py-django32,py-django40,py-django42  
+        python -m tox -e py-django32,py-django41,py-django42  
 
   docs:
     runs-on: ubuntu-latest
