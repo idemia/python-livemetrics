@@ -1,6 +1,6 @@
 -e .
 sphinx == 4.0.2
-aiohttp == 3.7.4
+aiohttp == 3.8.5
 django == 3.2.18
 flask == 2.0.1
 jinja2 >= 3.0.1
