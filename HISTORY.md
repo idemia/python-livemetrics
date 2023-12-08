@@ -2,8 +2,29 @@
 Release History
 ===============
 
-0.4
+0.7
 ---
+
+- Support Python up to version 3.12
+- Upgrade COTS
+- Use github workflow
+- Increase robustness and reponsiveness of the dashboard
+
+0.6 (2020-07-03)
+----------------
+
+- Fix display of dashboard when there is a lot of gauges
+- support of TLS monitored app in dashboard
+
+0.5 (2020-04-12)
+----------------
+
+- fix: update memory metric to include text+data+stack
+- dashboard: operator min & max - precision for values
+- Dashboard: support list of servers (i.e. list of values) with operator sum and average
+
+0.4 (2020-03-22)
+----------------
 
 - Add support for Python 3.8
 - Add children user time in cpu metric

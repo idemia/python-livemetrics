@@ -18,7 +18,11 @@ livemetrics
     :target: https://pypi.org/project/livemetrics/
     :alt: Python 3.x
 
-.. image:: https://codecov.io/gh/idemia/python-livemetrics/branch/master/graph/badge.svg?token=WxbatquDbu 
+.. image:: https://github.com/idemia/python-livemetrics/actions/workflows/tests.yml/badge.svg
+    :target: https://github.com/idemia/python-livemetrics/actions/workflows/tests.yml
+    :alt: Github action
+
+.. image:: https://codecov.io/gh/idemia/python-livemetrics/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/idemia/python-livemetrics
     :alt: Code Coverage Status (Codecov)
 
