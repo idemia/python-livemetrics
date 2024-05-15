@@ -242,6 +242,9 @@ class LiveMetrics(object):
         *memory_and_cpu*: a flag to activate gauges to report the memory (``memory``),
         number of threads (``num_threads``) and CPU usage (``cpu``) on Linux only. Default is True.
         
+        .. versionadded:: 0.7
+            *is_healthy* and *is_ready* can be coroutine if the publisher is ``aiohttp``.
+
         """
         self.version = version
         self.about = about
@@ -275,14 +278,25 @@ class LiveMetrics(object):
         """
         Register a new gauge for this **name**. If **value** is a callable,
         it will be called everytime the gauge value is accessed.
+
+        Return the Gauge object.
+
+        .. versionadded:: 0.7
+            The Gauge object is returned.
         """
-        self._gauges[name].mark(value)
+        g = self._gauges.setdefault(name, Gauge(value))
+        return g
 
     def histogram(self,name,value):
         """
-        Register a new value in a histogram.
+        Register a new value in a histogram and return the Histogram object.
+
+        .. versionadded:: 0.7
+            The Histogram object is returned.
         """
-        self._histograms[name].update(value)
+        h = self._histograms.setdefault(name, Histogram())
+        h.update(value)
+        return h
 
     def timer(self,event,ok,error):
         """
