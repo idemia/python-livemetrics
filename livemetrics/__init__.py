@@ -222,29 +222,28 @@ class LiveMetrics(object):
     """
     An object to be used as a singleton to aggregate all live metrics of an application.
 
+    *version*: a string giving the version of the application
+
+    *about*: a string describing the application
+
+    *is_healthy*: a function called to know if the application is healthy or not.
+    Function must have no parameter and return a boolean.
+
+    *is_ready*: a function called to know if the application is ready to process requests or not.
+    Function must have no parameter and return a boolean.
+    If None is provided, *is_healthy* is used.
+    
+    *memory_and_cpu*: a flag to activate gauges to report the memory (``memory``),
+    number of threads (``num_threads``) and CPU usage (``cpu``) on Linux only. Default is True.
+    
+    .. versionadded:: 0.7
+        *is_healthy* and *is_ready* can be coroutine if the publisher is ``aiohttp``.
+
     """
 
     def __init__(self,version,about,is_healthy,is_ready=None,memory_and_cpu=True):
         """
         Contructor.
-
-        *version*: a string giving the version of the application
-
-        *about*: a string describing the application
-
-        *is_healthy*: a function called to know if the application is healthy or not.
-        Function must have no parameter and return a boolean.
-
-        *is_ready*: a function called to know if the application is ready to process requests or not.
-        Function must have no parameter and return a boolean.
-        If None is provided, *is_healthy* is used.
-        
-        *memory_and_cpu*: a flag to activate gauges to report the memory (``memory``),
-        number of threads (``num_threads``) and CPU usage (``cpu``) on Linux only. Default is True.
-        
-        .. versionadded:: 0.7
-            *is_healthy* and *is_ready* can be coroutine if the publisher is ``aiohttp``.
-
         """
         self.version = version
         self.about = about
