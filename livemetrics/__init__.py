@@ -283,7 +283,8 @@ class LiveMetrics(object):
         .. versionadded:: 0.7
             The Gauge object is returned.
         """
-        g = self._gauges.setdefault(name, Gauge(value))
+        g = self._gauges.setdefault(name, Gauge())
+        g.mark(value)
         return g
 
     def histogram(self,name,value):

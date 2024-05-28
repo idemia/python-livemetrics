@@ -118,6 +118,7 @@ The cells can be of the following types:
 
 import os
 import logging
+import logging.handlers
 import argparse
 import asyncio
 
