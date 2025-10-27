@@ -4,38 +4,17 @@ on:
   - push
 
 jobs:
-  pytest_old:
+  build:
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.8", "3.9"]
-
+        os: ["ubuntu-latest", "windows-latest"]
+        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Run pytest
-      run: |
-        python -m pip install tox
-        python -m tox -e py-flask2-django32,py-flask2-django41,py-flask2-django42,py-flask3-django32,py-flask3-django41,py-flask3-django42
-
-  pytest_new:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.10", "3.11", "3.12"]
-
-    runs-on: ${{ matrix.os }}
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -53,17 +32,17 @@ jobs:
       with:
         files: .tox/coverage.xml
         name: python-livemetrics
-      if: matrix.python == '3.11' && matrix.os == 'ubuntu-latest'
+      if: matrix.python == '3.12' && matrix.os == 'ubuntu-latest'
 
   docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Run sphinx
         run: |

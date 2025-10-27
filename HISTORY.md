@@ -2,6 +2,13 @@
 Release History
 ===============
 
+0.8
+---
+
+- Support Python 3.10 to 3.14
+  Django 4.2.x and 5.2.x.
+  Flask 3.1.x
+  
 0.7
 ---
 
