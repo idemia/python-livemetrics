@@ -13,10 +13,10 @@ jobs:
     steps:
     - uses: actions/checkout@v5
 
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python ${{ matrix.python }}
       uses: actions/setup-python@v6
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: ${{ matrix.python }}
 
     - name: Run pytest
       run: |
