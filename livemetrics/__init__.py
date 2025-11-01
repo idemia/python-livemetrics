@@ -118,6 +118,7 @@ Metrics can be accessed using :py:meth:`LiveMetrics.get_metrics`:
 2
 
 Event must be specified if result and metric are defined:
+
 >>> lm.get_metrics(None,'OK','count')
 Traceback (most recent call last):
 ...
