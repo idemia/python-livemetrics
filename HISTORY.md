@@ -2,15 +2,15 @@
 Release History
 ===============
 
-0.8
----
+0.8 (2025-11-01)
+----------------
 
 - Support Python 3.10 to 3.14
-  Django 4.2.x and 5.2.x.
-  Flask 3.1.x
-  
-0.7
----
+- Django 4.2.x and 5.2.x.
+- Flask 3.1.x
+
+0.7.1 (2024-05-17)
+------------------
 
 - Support Python up to version 3.12
 - Upgrade COTS
